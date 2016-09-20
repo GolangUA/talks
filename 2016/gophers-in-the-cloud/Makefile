@@ -6,7 +6,7 @@ default: build
 
 src: 
 	export GOPATH="$(CURDIR)" && \
-	echo $$GOPATH && mkdir -p $$GOPATH/{src/app,bin} && mv *.{go,yaml,lock} $$GOPATH/src/app/ && mv vendor/ $$GOPATH/src/app/
+	echo $$GOPATH && mkdir -p $$GOPATH/{src/app,bin} && mv *.{go,yaml,lock} $$GOPATH/src/app/
 glide: src
 	export GOPATH="$(CURDIR)" && \
 	go get github.com/Masterminds/glide
