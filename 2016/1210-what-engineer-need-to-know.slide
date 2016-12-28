@@ -1,0 +1,178 @@
+What engineer need to know?
+GolangUA Lviv Meetup
+10 Dec 2016
+Tags: Go, Golang, technology overview
+
+Ivan Kutuzov
+SE, SoftServe
+https://golang.org.ua
+@GolangUA
+@arbrix
+
+* Agenda
+
+- Technology base for the backend world
+- The strongest sides of the Golang and it place at the market
+- No silver bullet, always remember about strong and weak sides of your chose
+
+* Let's define the stack of technologies
+
+* O’Reilly Software Development Salary Survey
+
+[[https://www.oreilly.com/ideas/2016-european-software-development-salary-survey][2016 European Software Development Salary Survey]]
+Find out what pays and what doesn't for European software engineers, developers, and other programming professionals.
+By [[https://www.oreilly.com/people/0221f-andy-oram][Andy Oram]] and [[https://www.oreilly.com/people/be419-john-king][John King]] August 17, 2016
+
+.image ./1210-what-engineer-need-to-know/software-eng-hot-air-balloon-crop.jpg 300 _
+A crowd watches from the streets as a hot-air balloon takes off
+(source: [[https://commons.wikimedia.org/wiki/File:A_huge_crowd_watches_from_the_streets_as_a_hot-air_balloon_t_Wellcome_V0040878.jpg][Wellcome Images via Wikimedia Commons]]).
+
+* Some key findings include:
+
+- Top languages currently used professionally in the sample: JavaScript, HTML, CSS, Java, Bash, and Python.
+- Respondents reported using an average of 3.6 languages.
+- Software development is a social endeavor: people who are on tiny teams and who don’t attend meetings tend to earn much less.
+- The most common languages that respondents used in the past but no longer use were C/C++, Java, and PHP.
+- The most common languages that respondents stated they intend to learn in the next 1–2 years were Go, Swift, Python, and Scala.
+
+* 
+.image ./1210-what-engineer-need-to-know/salary-survey-industry.png 600 _
+
+* 
+.image ./1210-what-engineer-need-to-know/salary-survey-data-tools.png 600 _
+
+* 
+.image ./1210-what-engineer-need-to-know/salary-survey-build-automation.png 600 _
+
+* 
+.image ./1210-what-engineer-need-to-know/salary-survey-cloud.png 600 _
+
+* 
+.image ./1210-what-engineer-need-to-know/salary-survey-programming-lang.png 600 _
+
+* 
+.image ./1210-what-engineer-need-to-know/salary-survey-cur-programming-lang.png 600 _
+
+* 
+.image ./1210-what-engineer-need-to-know/salary-survey-future-lang.png 600 _
+
+* What about today's limitations
+
+* Network and disk I/O are still expensive
+
+.image ./1210-what-engineer-need-to-know/media-20160803.jpg 500 _
+
+* A fast programming language
+
+As [[https://www.youtube.com/watch?v=aiv1JOfMjm0][Rick Hudson noted at GopherCon]] in 2015, it's time for a programming language that works _with_ the limitations of today's hardware, rather than continue to ignore the reality that CPU designers find themselves.
+
+So, for best performance on today's hardware in today's world, you need a programming language which:
+
+- Is compiled, not interpreted.
+- Permits efficient code to be written.
+- Lets programmers talk about memory effectively, think structs vs java objects
+- Has a compiler that produces efficient code, it has to be small code as well, because cache.
+
+* The Go programming language
+
+- Modern
+- Compact, concise, general-purpose
+- Imperative, statically type-checked, dynamically type-safe
+- Garbage-collected
+- Compiles to native code, statically linked
+- Fast compilation, efficient execution
+
+Designed by programmers for programmers!
+
+.link https://talks.golang.org/2014/taste.slide#2 Source: Robert Griesemer, A Taste of Go.
+.link https://github.com/golang/go/wiki/whygo Source: Golang Wiki, Why Go?
+
+* Speed
+
+Go is often noted for its fast compilation, but this is only one facet of the idea of Go being a _fast_ language to program in.
+
+"False dichotomy of static languages being 'slow and painful' and dynamic languages being 'fast and fun'" -Rob Pike
+
+"Clumsy type systems drive people to dynamically typed languages" -Robert Griesemer
+
+Go is an attempt to demonstrate that a language can be both fast in terms of the programs it produces and fast (productive?) for the authors.
+
+* Good support for concurrency and communication
+
+- Multicore CPUs are a reality.
+- Multiprocessing is not a solution.
+- Networking support baked into the standard library, integrated into the runtime.
+
+* Garbage collected
+
+Go is a garbage collected language.
+
+- Eliminates the bookkeeping errors related to ownership of shared values.
+- Eliminates an entire class of use after free and memory leak bugs.
+- Enables simpler, cleaner, APIs.
+
+The garbage collector handles heaps into the 100's of GB range, and is designed for extremely low "stop the world" pauses.
+
+In Go 1.7 these pauses are now less than 100 microseconds.
+
+* Opinionated
+
+Go is an opinionated language.
+
+- Unused local variables are an error.
+- Unused imports are also an error.
+- The compiler does not issue warnings, only errors.
+- A single way to format code as defined by `go`fmt`.
+
+* Design of the Golang
+
+In 2002 Robert Martin published his book,[[https://www.amazon.co.uk/dp/0135974445/ref=pd_lpo_sbs_dp_ss_2/253-1946330-6751666?pf_rd_m=A3P5ROKL5A1OLE&pf_rd_s=lpo-top-stripe&pf_rd_r=23C4AHYV7EXGYHKD6G8Q&pf_rd_t=201&pf_rd_p=569136327&pf_rd_i=0132760584][Agile Software Development, Principles, Patterns, and Practices]]. In it he described five principles of reusable software design, which he called the SOLID principles, after the first letters in their names.
+
+- Single Responsibility Principle
+- Open / Closed Principle
+- Liskov Substitution Principle
+- Interface Segregation Principle
+- Dependency Inversion Principle
+
+* Where you could stick
+
+
+* Where you could stick
+
+- Interfaces
+
+* Where you could stick
+
+- Interfaces
+- Concurrency
+
+* Where you could stick
+
+- Interfaces
+- Concurrency
+- Type conversion
+
+* Where you could stick
+
+- Interfaces
+- Concurrency
+- Golang OO model
+- Other Go gotchas
+
+.link https://go-traps.appspot.com Go Traps
+.link http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/ 50 Shades of Go
+.link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas
+
+* 
+
+Thank you very much for participating today, I hope that you enjoyed yourself and are encouraged to learn more about Go.
+
+I would like to recommend several online resources:
+
+.link https://tour.golang.org/welcome/1 tour.golang.org
+.link https://gobyexample.com/ Go by example
+.link https://github.com/golang/go/wiki Golang Wiki
+.link http://golangweekly.com Go Newsletter
+
+.link https://dave.cheney.net/training Training by Dave Cheney
+.link https://dave.cheney.net/resources-for-new-go-programmers Resources for new Go programmer
