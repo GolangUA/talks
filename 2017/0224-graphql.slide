@@ -1,0 +1,242 @@
+GraphQL, tips and tricks or why and how to
+Go 1.8 Release Party
+24 Feb 2017
+Tags: GolangUA, GraphQL, Go, API
+
+Ivan Kutuzov
+SE, SoftServe
+https://golang.org.ua
+@GolangUA
+@arbrix
+
+* About what this talk?
+
+* Agenda
+
+- API could be defferent
+- What's wrong with REST?
+- What is GraphQL?
+- GraphQL Schema & Types
+- What restrictions we have faced in the practice?
+
+* API could be different
+
+Application program interface (API) is a set of routines, protocols, and tools for building software applications. An API specifies how software components should interact.
+
+In the world of API architecture, REST has been the reigning ruler for a decade or more.
+
+In REST APIs, the server defines a specific set of resources that a client can request, and these resources are defined by unique URLs.
+
+For example, in the API for a generic microblogging platform, the URL `/users/1` may denote the first user in the system, `/users/1/posts` could return a collection of all posts that user has written, and `/users/1/posts/327` could return a single post.
+
+* What's wrong with REST?
+
+* What's wrong with REST?
+
+- Too many HTTP request
+
+* What's wrong with REST?
+
+- Too many HTTP request
+- “Versioning” REST APIs is a pain
+
+* What's wrong with REST?
+
+- Too many HTTP request
+- “Versioning” REST APIs is a pain
+- PUT (update) return entire object data, even if you change one field
+
+* What is GraphQL?
+
+GraphQL is a query language. It’s also perfect for APIs. It allows you to define your data using a fully-fledged type system, forming a schema that is self-documenting. It also gives clients full control over the data they request.
+
+GraphQL is a technology written by Facebook. Facebook was facing major problems with the data pipeline for their mobile applications. They evaluated REST and other options but, given problems like those described above, ultimately took the opportunity to produce something truly new.
+
+With GraphQL, clients can get all of the data they need to render a view using only one request.
+
+* graphql.org
+
+.iframe http://graphql.org 600 1030
+
+* GraphiQL
+
+.image https://cdn-images-1.medium.com/max/1600/1*KLNCl6EchQ4aozgHCfFv2Q.png _ 700
+
+[[https://medium.com/the-graphqlhub/graphiql-graphql-s-killer-app-9896242b2125#.okxj1qasj][GraphiQL: GraphQL’s Killer App]]
+
+* Comparision flow in REST and GraphQL
+
+.image https://cdn-images-1.medium.com/max/2000/1*wADTEw0sygkpiIaVTeq47w.png _ 900
+
+GraphQL’s power comes from a simple idea — instead of defining the structure of responses on the server, the flexibility is given to the client.
+
+* Architecture
+
+.image http://graphql.org/img/diagrams/business_layer.png _ 600
+
+* Dou you change you data for GraphQL?
+
+ user --- OWNS --- playlist
+   |                   |
+ LIKES              CONTAINS
+   |                   |
+   v                   |
+ track <---------------┘
+
+GraphQL describes and fetches data like a tree 
+
+ user
+ ┖-OWNS-> playlist
+          ┖-CONTAINS-> track
+                       ┖-LIKED_BY-> users
+
+* GraphQL consists of ...
+
+* Queries
+
+ Fields
+
+.image ./0224-graphql/graphql-fields.png _ 800
+
+ Arguments
+
+.image ./0224-graphql/graphql-arguments.png _ 800
+
+* Queries Aliases
+
+.image ./0224-graphql/graphql-aliases.png _ 800
+
+* Queries Fragments
+
+.image ./0224-graphql/graphql-fragments.png _ 800
+
+* Queries Variables
+
+.image ./0224-graphql/graphql-variables.png _ 800
+
+* Queries Directives
+
+.image ./0224-graphql/graphql-directives.png _ 800
+
+* Mutations
+
+.image ./0224-graphql/graphql-mutations.png _ 800
+
+* GraphqQL Schemas and Types
+
+* Type language
+
+GraphQL services can be written in any language. Since we can't rely on a specific programming language syntax, like JavaScript, to talk about GraphQL schemas, we'll define our own simple language. We'll use the "GraphQL schema language" - it's similar to the query language, and allows us to talk about GraphQL schemas in a language-agnostic way.
+
+* Object types and fields
+
+.image ./0224-graphql/graphql-type-example.png _ 800
+
+- *Character* is a GraphQL Object Type, meaning it's a type with some fields. Most of the types in your schema will be object types.
+- *name* and *appearsIn* are fields on the Character type. That means that name and appearsIn are the only fields that can appear in any part of a GraphQL query that operates on the Character type.
+- *String* is one of the built-in scalar types - these are types that resolve to a single scalar object, and can't have sub-selections in the query. We'll go over scalar types more later.
+
+* Object types and fields
+
+.image ./0224-graphql/graphql-type-example.png _ 800
+
+- *String!* means that the field is non-nullable, meaning that the GraphQL service promises to always give you a value when you query this field. In the type language, we'll represent those with an exclamation mark.
+- *[Episode]!* represents an array of Episode objects. Since it is also non-nullable, you can always expect an array (with zero or more items) when you query the appearsIn field.
+
+* Arguments
+
+.image ./0224-graphql/graphql-arguments-type.png _ 800
+
+All arguments are named. Unlike languages like JavaScript and Python where functions take a list of ordered arguments, all arguments in GraphQL are passed by name specifically. In this case, the length field has one defined argument, unit.
+
+Arguments can be either required or optional. When an argument is optional, we can define a default value - if the unit argument is not passed, it will be set to METER by default.
+
+* The Query and Mutation types
+
+Most types in your schema will just be normal object types, but there are two types that are special within a schema:
+
+.image ./0224-graphql/graphql-schema.png _ 800
+
+Every GraphQL service has a query type and may or may not have a mutation type. These types are the same as a regular object type, but they are special because they define the entry point of every GraphQL query.
+
+* Scalar types
+
+- *Int*: A signed 32‐bit integer.
+- *Float*: A signed double-precision floating-point value.
+- *String*: A UTF‐8 character sequence.
+- *Boolean*: true or false.
+- *ID*: The ID scalar type represents a unique identifier, often used to refetch an object or as the key for a cache. The ID type is serialized in the same way as a String; however, defining it as an ID signifies that it is not intended to be human‐readable.
+
+* Rest of types
+
+- Enumeration types
+- Lists and Non-Null
+- Interfaces
+- Union types
+- Input types
+
+* So what about Go?
+
+* Existing implementations
+
+- [[https://github.com/graphql-go/graphql][graphql-go/graphql]]
+- [[https://github.com/neelance/graphql-go][neelance/graphql-go]]
+- [[https://github.com/playlyfe/go-graphql][playlyfe/go-graphql]]
+
+
+source: [[https://github.com/chentsulin/awesome-graphql#lib-go][awesome-graphql]]
+
+* Benchmarks
+
+* graphql-js master
+
+ wrk -t12 -c400 -d30s --timeout 10s "http://localhost:3002/graphql?query={hello}"
+ Running 30s test @ http://localhost:3002/graphql?query={hello}
+   12 threads and 400 connections
+   Thread Stats   Avg      Stdev     Max   +/- Stdev
+     Latency   219.79ms   80.35ms 613.69ms   78.38%
+     Req/Sec   149.99     96.37   494.00     58.29%
+   52157 requests in 30.05s, 9.96MB read
+ Requests/sec:   1735.60
+ Transfer/sec:    339.33KB
+
+* graphql-go master
+
+ wrk -t12 -c400 -d30s --timeout 10s "http://localhost:3003/graphql?query={hello}"
+ Running 30s test @ http://localhost:3003/graphql?query={hello}
+   12 threads and 400 connections
+   Thread Stats   Avg      Stdev     Max   +/- Stdev
+     Latency   134.97ms  163.47ms   1.85s    86.12%
+     Req/Sec   372.46    236.09     1.58k    70.99%
+   133607 requests in 30.05s, 18.35MB read
+ Requests/sec:   4445.99
+ Transfer/sec:    625.22KB
+
+* playlyfe/go-graphql master
+
+ wrk -t12 -c400 -d30s --timeout 10s "http://localhost:3003/graphql?query={hello}"
+ Running 30s test @ http://localhost:3003/graphql?query={hello}
+   12 threads and 400 connections
+   Thread Stats   Avg      Stdev     Max   +/- Stdev
+     Latency    34.89ms   43.72ms 518.00ms   87.58%
+     Req/Sec     1.44k     0.90k    6.10k    81.35%
+   514095 requests in 30.05s, 70.60MB read
+ Requests/sec:  17108.13
+ Transfer/sec:      2.35MB
+
+* graphql-go issues
+
+- Schema should be defined before servis will launched
+- If you have large API - this is your problems (all types should have unic name)
+- Hard to add caching logic with supporting transfering Headers to the client
+- Use logs for debugging
+
+* links
+
+[[http://graphql.org][Main site]]
+[[http://facebook.github.io/graphql/][GraphQL spec]]
+[[https://medium.freecodecamp.com/give-it-a-rest-use-graphql-for-your-apis-40a2761e6336#.kpg51e58][Give it a REST: use GraphQL for your APIs]]
+[[https://medium.com/chute-engineering/graphql-in-the-age-of-rest-apis-b10f2bf09bba#.ccwnb4qab][GraphQL in the age of REST APIs]]
+[[https://0x2a.sh/from-rest-to-graphql-b4e95e94c26b#.9wxspfc5u][From REST to GraphQL]]
+[[https://medium.com/the-graphqlhub/graphiql-graphql-s-killer-app-9896242b2125#.okxj1qasj][GraphiQL: GraphQL’s Killer App]]
+[[https://github.com/chentsulin/awesome-graphql][Awesom GraphQL]]
