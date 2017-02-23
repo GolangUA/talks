@@ -13,13 +13,11 @@ https://golang.org.ua
 
 * Agenda
 
-- API could be different
-- What's wrong with REST?
-- What is GraphQL?
-- GraphQL Schema & Types
+- API field (REST, SOAP, JSON, ...) and it problems
+- What is GraphQL
 - What restrictions we have faced in the practice?
 
-* API could be different
+* API could cause a headache
 
 Application program interface (API) is a set of routines, protocols, and tools for building software applications. An API specifies how software components should interact.
 
@@ -134,7 +132,7 @@ GraphQL services can be written in any language. Since we can't rely on a specif
 
 - *Character* is a GraphQL Object Type, meaning it's a type with some fields. Most of the types in your schema will be object types.
 - *name* and *appearsIn* are fields on the Character type. That means that name and appearsIn are the only fields that can appear in any part of a GraphQL query that operates on the Character type.
-- *String* is one of the built-in scalar types - these are types that resolve to a single scalar object, and can't have sub-selections in the query. We'll go over scalar types more later.
+- *String* is one of the built-in scalar types - these are types that resolve to a single scalar object, and can't have sub-selections in the query.
 
 * Object types and fields
 
@@ -142,22 +140,6 @@ GraphQL services can be written in any language. Since we can't rely on a specif
 
 - *String!* means that the field is non-nullable, meaning that the GraphQL service promises to always give you a value when you query this field. In the type language, we'll represent those with an exclamation mark.
 - *[Episode]!* represents an array of Episode objects. Since it is also non-nullable, you can always expect an array (with zero or more items) when you query the appearsIn field.
-
-* Arguments
-
-.image ./0224-graphql/graphql-arguments-type.png _ 800
-
-All arguments are named. Unlike languages like JavaScript and Python where functions take a list of ordered arguments, all arguments in GraphQL are passed by name specifically. In this case, the length field has one defined argument, unit.
-
-Arguments can be either required or optional. When an argument is optional, we can define a default value - if the unit argument is not passed, it will be set to METER by default.
-
-* The Query and Mutation types
-
-Most types in your schema will just be normal object types, but there are two types that are special within a schema:
-
-.image ./0224-graphql/graphql-schema.png _ 800
-
-Every GraphQL service has a query type and may or may not have a mutation type. These types are the same as a regular object type, but they are special because they define the entry point of every GraphQL query.
 
 * Scalar types
 
@@ -175,6 +157,22 @@ Every GraphQL service has a query type and may or may not have a mutation type. 
 - Union types
 - Input types
 
+* Arguments
+
+.image ./0224-graphql/graphql-arguments-type.png _ 800
+
+All arguments are named. Unlike languages like JavaScript and Python where functions take a list of ordered arguments, all arguments in GraphQL are passed by name specifically. In this case, the length field has one defined argument, unit.
+
+Arguments can be either required or optional. When an argument is optional, we can define a default value - if the unit argument is not passed, it will be set to METER by default.
+
+* The Query and Mutation types
+
+Most types in your schema will just be normal object types, but there are two types that are special within a schema:
+
+.image ./0224-graphql/graphql-schema.png _ 800
+
+Every GraphQL service has a query type and may or may not have a mutation type. These types are the same as a regular object type, but they are special because they define the entry point of every GraphQL query.
+
 * So what about Go?
 
 * Existing implementations
@@ -185,6 +183,10 @@ Every GraphQL service has a query type and may or may not have a mutation type. 
 
 
 source: [[https://github.com/chentsulin/awesome-graphql#lib-go][awesome-graphql]]
+
+for beginning recommend looking at StarWars example:
+[[https://github.com/chentsulin/awesome-graphql#example-go][Example Go]]
+[[https://github.com/graphql-go/relay/blob/master/examples/starwars/schema.go][GraphQL Schema for StarWars]]
 
 * Benchmarks
 
@@ -212,6 +214,8 @@ source: [[https://github.com/chentsulin/awesome-graphql#lib-go][awesome-graphql]
  Requests/sec:   4445.99
  Transfer/sec:    625.22KB
 
+JS 1735.6 vs Go 4445.99
+
 * playlyfe/go-graphql master
 
  wrk -t12 -c400 -d30s --timeout 10s "http://localhost:3003/graphql?query={hello}"
@@ -224,12 +228,39 @@ source: [[https://github.com/chentsulin/awesome-graphql#lib-go][awesome-graphql]
  Requests/sec:  17108.13
  Transfer/sec:      2.35MB
 
-* graphql-go issues
+JS 1735.6 vs Go 4445.99 vs Go 17108.13
+
+* graphql-go issues that we have faced
+
+- Schema should be defined before servis will launched
+
+* graphql-go issues that we have faced
+
+- Schema should be defined before servis will launched
+- If you have large API - this is your problems (all types should have unic name)
+
+* graphql-go issues that we have faced
 
 - Schema should be defined before servis will launched
 - If you have large API - this is your problems (all types should have unic name)
 - Hard to add caching logic with supporting transfering Headers to the client
-- Use logs for debugging
+
+* graphql-go issues that we have faced
+
+- Schema should be defined before servis will launched
+- If you have large API - this is your problems (all types should have unic name)
+- Hard to add caching logic with supporting transfering Headers to the client
+- [[http://facebook.github.io/graphql/#sec-Names][Naming convention]]: /[_A-Za-z][_0-9A-Za-z]*/ (does your API keys fit?)
+
+* graphql-go issues that we have faced
+
+- Schema should be defined before servis will launched
+- If you have large API - this is your problems (all types should have unic name)
+- Hard to add caching logic with supporting transfering Headers to the client
+- [[http://facebook.github.io/graphql/#sec-Names][Naming convention]]: /[_A-Za-z][_0-9A-Za-z]*/ (does your API keys fit?)
+- Use logs for debugging, Luke
+
+* Questions?
 
 * links
 
