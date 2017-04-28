@@ -1,0 +1,174 @@
+Strong and weak sides of Golang in production
+28 Apr 2017
+Tags: GolangUA, Go
+
+Ivan Kutuzov
+SE, SoftServe
+https://golang.org.ua
+@GolangUA
+@arbrix
+
+* Про себе
+
+- Попередній досвід: 10+ років web/fullstack developer (PHP, JS)
+- Досвід з Go: 2+ років
+- активний діяч спільноти GolangUA (https://golang.org.ua)
+- Twitter: @arbrix
+
+.image ./0428-go-in-prod/ik-face.png 350 _
+
+* Чому Go
+
+Go був створений інженерами для інженерів. [[https://talks.golang.org/2014/taste.slide#2][Robert Griesemer 2014]]
+
+- нові умови виконання програмного забезпечення
+- зменьшити вартість підтримки програмного коду
+- спростити розробку нових продуктів
+
+.image ./0428-go-in-prod/gopher_big.png _ 400
+
+* Хто вже використовує (з виступів 2015 року)
+
+.image ./0428-go-in-prod/logo-1.png 250 _
+.image ./0428-go-in-prod/logo-2.png 250 _
+
+* Хто вже використовує (з виступів 2015 року)
+
+.image ./0428-go-in-prod/logo-3.png 250 _
+.image ./0428-go-in-prod/logo-4.png 250 _
+
+* Хто вже використовує (з виступів 2015 року)
+
+.image ./0428-go-in-prod/logo-5.png 250 _
+.image ./0428-go-in-prod/logo-6.png 250 _
+
+* Хто ще використовує
+
+- [[https://github.com/golang/go/wiki/GoUsers][GoUsers]] ~600 компаній
+- [[https://github.com/golang/go/wiki/SuccessStories][Success Stories]]
+
+.image ./0428-go-in-prod/gophers5th.jpg _ 800
+
+* Переваги Go
+
+- Компільована мова програмування
+- Строго-типізована
+- Автоматичний контроль за виділенням пам'яті
+- Проста
+- Швидка
+- Якісна та потужна стандартна бібліотека
+- Широкий набір інструментів (go tools)
+
+* Що означає проста? Порівняємо з Java...
+
+	public static int IndexOfAny(String str, char[] chars) {
+		if (isEmpty(str) || ArrayUtils.isEmpty(chars)) {
+			return -1;
+		}
+		for (int i = 0; i < str.length(); i++) {
+			char ch = str.charAt(i);
+			for (int j = 0; j < chars.length; j++) {
+				if (chars[j] == ch) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
+299 chars (100%), 101 tokens (100%)
+
+* Реалізація на Go
+
+	func IndexOfAny(str string, chars []rune) int {
+		if len(str) == 0 || len(chars) == 0 {
+			return -1
+		}
+		for i, ch := range str {
+			for _, match := range chars {
+				if ch == match {
+					return i
+				}
+			}
+		}
+		return -1
+	}
+
+217 chars (73%), 62 tokens (61%)
+
+Майже на 30% меньше тексту і близько 40% переваги по кількості знаків!
+
+_Зменьшення_шуму_призводе_до_покращення_сприйняття._
+
+* Приклад простого HTTP серверу
+
+	package main
+	
+	import (
+		"fmt"
+		"log"
+		"net/http"
+	)
+	
+	func HelloServer(w http.ResponseWriter, req *http.Request) {
+		log.Println(req.URL)
+		fmt.Fprintf(w, "Hello, #Pivorak!\nURL = %s\n", req.URL)
+	}
+	
+	func main() {
+		fmt.Println("please connect to localhost:3000/hello")
+		http.HandleFunc("/hello", HelloServer)
+		log.Fatal(http.ListenAndServe(":3000", nil))
+	}
+
+* Звідки швидкість?
+
+- компіляція в бінарний код
+- підтримка concurrency (можливість одночасного виконання операцій)
+
+	func First(query string, replicas ...Search) Result {
+	    c := make(chan Result)
+	    searchReplica := func(i int) { c <- replicas[i].Search(query) }
+	    for i := range replicas {
+	        go searchReplica(i)
+	    }
+	    return <-c
+	}
+
+Без блокувань, без перевірки умов, без зворотніх викликів.
+[[https://talks.golang.org/2012/concurrency.slide][Go Concurrency Patterns 2012]]
+[[https://talks.golang.org/2013/advconc.slide#1][Advanced Go Concurrency Patterns 2013]]
+
+* Зручні інструменти
+
+.html ./0428-go-in-prod/tool-list.html
+
+* Де застосовують Go
+
+- Cloud/Networking сервери, роутери, проксі, пушилки та бекенди
+- Distributed системи та storage/FS, внутрішня інфраструктура 
+- Мікросервіси всіх видів (+фреймворки GoKit, Kite, etc) 
+- Кластерні штуки для датацентрів (etcd, consul, packer, vault etc)
+- Контейнери та оркестрація (Kubernetes, Racket, Docker, Tectronic, etc)
+
+* Де ще можна
+
+- Бази даних (CockroachDB, InfluxDB, Cayley, Tiedot, Aerospike, etc)
+- REST-бекенди та SPA-бекенди (restful, gorilla, echo, etc)
+- Навіть вебсайти (hugo, gin, echo, negroni, etc. +фреймворки Revel, Beego, etc.)
+- Утиліти командного рядка (aws-sdk, mongotools, docker,
+- Devops штуки, бекап, менеджмент систем і т.д.
+
+* Questions?
+
+* Resources
+
+[[https://npf.io/2017/03/3.5yrs-500k-lines-of-go/][3.5 Years, 500k Lines of Go (Part 1)]]
+[[https://peter.bourgon.org/go-in-production/][Go: Best Practices for Production Environments]]
+[[https://www.iron.io/go-after-2-years-in-production/][Go After 2 Years in Production (2013)]]
+[[https://gotocon.com/dl/goto-chicago-2016/slides/TravisReeder_GOInProduction.pdf][Go in production 2016]]
+
+
+[[https://golang.org/doc/code.html][How to Write Go Code]]
+[[https://golang.org/doc/effective_go.html][Effective Go]]
+[[https://github.com/golang/go/wiki/CodeReviewComments][Go Code Review Comments]]
