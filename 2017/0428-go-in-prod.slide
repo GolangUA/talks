@@ -239,7 +239,7 @@ Production-grade code - коли ви знаєте про такі можлив�
 - Додавайте та відслідковуйти Метрики сервису. Це надає більше інформації по поведінці та швидкодії вашої програми. На ринку існує багато компаній які надають послуги збирання, зберіганя, аналізу ваших метрик: Datadog, Prometheus, StatsD + Graphite та інші.
 - Тестуйте більше ніж вважаєте запотрібним
 
-* Чи усе так радужно?
+* Чи все так радужно?
 
 .image ./0428-go-in-prod/panda-rainbow.jpg _ 900
 
@@ -252,6 +252,19 @@ Production-grade code - коли ви знаєте про такі можлив�
 - too opinionated
 .caption source: [[https://divan.github.io/posts/go_complain_howto/][How to complain about Go]]
 .caption more complains: [[https://github.com/ksimka/go-is-not-good][list of articles complaining that go (golang) isn't good enough]]
+
+* Крилаті всилови Golang
+
+- A little copying is better than a little dependency.
+- Make the zero value useful.
+- The bigger the interface, the weaker the abstraction.
+- Clear is better than clever.
+- Reflection is never clear.
+- Errors are values.
+- Don't just check errors, handle them gracefully.
+- Documentation is for users.
+- Don't panic.
+.caption Simple, Poetic, Pithy: [[https://go-proverbs.github.io/][Go Proverbs]]
 
 * Пастки
 
