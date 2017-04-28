@@ -20,6 +20,7 @@ https://golang.org.ua
 * Чому Go
 
 Go був створений інженерами для інженерів. [[https://talks.golang.org/2014/taste.slide#2][Robert Griesemer 2014]]
+.caption source: [[https://golang.org/doc/faq#What_is_the_purpose_of_the_project][What is the purpose of the project]]
 
 - нові умови виконання програмного забезпечення
 - зменьшити вартість підтримки програмного коду
@@ -53,7 +54,7 @@ Go був створений інженерами для інженерів. [[h
 
 - Компільована мова програмування
 - Строго-типізована
-- Автоматичний контроль за виділенням пам'яті
+- Автоматичнe управління пам'яттю
 - Проста
 - Швидка
 - Якісна та потужна стандартна бібліотека
@@ -99,6 +100,7 @@ Go був створений інженерами для інженерів. [[h
 Майже на 30% меньше тексту і близько 40% переваги по кількості знаків!
 
 _Зменьшення_шуму_призводе_до_покращення_сприйняття._
+.caption source: [[https://talks.golang.org/2014/taste.slide#2][Robert Griesemer 2014]]
 
 * Приклад простого HTTP серверу
 
@@ -142,6 +144,9 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 * Зручні інструменти
 
 .html ./0428-go-in-prod/tool-list.html
+.caption source: [[https://github.com/golang/go/wiki/CodeTools][Code Tools]]
+.caption source: [[https://github.com/golang/go/wiki/GoGenerateTools][Generate Tools]]
+.caption source: [[https://github.com/golang/go/wiki/PackageManagementTools][Package Management Tools]]
 
 * Де застосовують Go
 
@@ -158,11 +163,199 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 - Навіть вебсайти (hugo, gin, echo, negroni, etc. +фреймворки Revel, Beego, etc.)
 - Утиліти командного рядка (aws-sdk, mongotools, docker,
 - Devops штуки, бекап, менеджмент систем і т.д.
+.caption source: [[https://youtu.be/nbAX1yEdteo?list=PLb4zKafb8ilKQz0Rs8Jp-mlzVIzXBrQen][Ivan Daniluk Kyiv Go Meetup 2015 - Go in 2015]]
+
+* Stdlib
+
+~140 Пакетів
+
+.image ./0428-go-in-prod/golang-stdlib-tag-cloud.png _ 900
+
+* Різноманітність бібліотек
+
+.link https://awesome-go.com
+.link https://godoc.org
+.link http://go-search.org/search go-search.org - 756881 packages
+
+* То коли вже про production буде?
+
+[[https://landing.google.com/sre/book.html][Site Reliability Engineering]]
+.caption Edited by Betsy Beyer, Chris Jones, Jennifer Petoff and Niall Richard Murphy
+
+Members of the SRE team explain how their engagement with the entire software lifecycle has enabled Google to build, deploy, monitor, and maintain some of the largest software systems in the world.
+
+* Production-grade Go
+
+Розробка Production-grage Go програм відрізняється від звичайної.
+Велика різниця між вашим кодом і вашим кодом в production. Ви маєте знати усі шляхи які можуть призвести до падіння сервісу!
+
+Production-grade code - коли ви знаєте про такі можливості і передбачаєте їх обробку, запобігаєте появі або готуєте план дій у таких випадках.
+.caption source: [[https://www.oreilly.com/ideas/how-to-ship-production-grade-go][How to ship production-grade Go]]
+
+* Поради
+
+- Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
+
+* Поради
+
+- Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
+- Налаштуйте сповіщення у випадках *panic*
+
+* Поради
+
+- Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
+- Налаштуйте сповіщення у випадках *panic*
+- Використовуйте структуровані логи
+
+	import log "github.com/Sirupsen/logrus"
+
+	func main() {
+	  log.SetFormatter(&log.JSONFormatter{})
+	
+	  log.WithFields(log.Fields{
+	    "userId": 1,
+	    "server": "www.google.com",
+	  }).Info("Redirecting user")
+	
+	}
+
+
+	{"level":"info","msg":"Redirecting user","server":"www.google.com",
+	"time":"2017-03-25T17:00:00-08:00","userId":1}
+
+
+* Поради
+
+- Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
+- Налаштуйте сповіщення у випадках *panic*
+- Використовуйте структуровані логи
+- Додавайте та відслідковуйти Метрики сервису. Це надає більше інформації по поведінці та швидкодії вашої програми. На ринку існує багато компаній які надають послуги збирання, зберіганя, аналізу ваших метрик: Datadog, Prometheus, StatsD + Graphite та інші.
+
+* Поради
+
+- Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
+- Налаштуйте сповіщення у випадках *panic*
+- Використовуйте структуровані логи
+- Додавайте та відслідковуйти Метрики сервису. Це надає більше інформації по поведінці та швидкодії вашої програми. На ринку існує багато компаній які надають послуги збирання, зберіганя, аналізу ваших метрик: Datadog, Prometheus, StatsD + Graphite та інші.
+- Тестуйте більше ніж вважаєте запотрібним
+
+* Чи усе так радужно?
+
+.image ./0428-go-in-prod/panda-rainbow.jpg _ 900
+
+* Новеньки часто жаліються на:
+
+- error handling / no exceptions
+- no generics
+- stuck in 70’s
+- no OOP
+- too opinionated
+.caption source: [[https://divan.github.io/posts/go_complain_howto/][How to complain about Go]]
+.caption more complains: [[https://github.com/ksimka/go-is-not-good][list of articles complaining that go (golang) isn't good enough]]
+
+* Пастки
+
+- Відмінність від поведінки інших мов (вигляд схожий, результат не передбачувальний)
+
+  for i := range []byte(`Hello`) {
+     pintln(i)
+  }
+
+.link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas
+
+* Пастки
+
+.link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas
+.link http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/ 50 Shades of Go: Traps, Gotchas, and Common Mistakes for New Golang Devs
+
+* Пастки
+
+.link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas
+.link http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/ 50 Shades of Go: Traps, Gotchas, and Common Mistakes for New Golang Devs
+.link https://go-traps.appspot.com/
+
+* Що з приводу контейнеризації?
+
+Статичний файл без жодних залежностей, кажете...
+
+  package main
+  import (
+      "fmt"
+      "io/ioutil"
+      "net/http"
+      "os"
+  )
+  func main() {
+      resp, err := http.Get("https://google.com")
+      check(err)
+      body, err := ioutil.ReadAll(resp.Body)
+      check(err)
+      fmt.Println(len(body))
+  }
+  func check(err error) {
+      if err != nil {
+          fmt.Println(err)
+          os.Exit(1)
+      }
+  }
+
+* Dockerize
+
+  FROM golang:latest 
+  RUN mkdir /app 
+  ADD . /app/ 
+  WORKDIR /app 
+  RUN go build -o main . 
+  CMD ["/app/main"]
+
+Але зачекайте, `golang:latest` 267 MB
+.caption source: [[https://hub.docker.com/r/library/golang/tags/][docker hub]]
+
+* Docker from sratch
+
+  FROM scratch
+  ADD main /
+  CMD ["/main"]
+
+Але спочатку ми маємо скомпілювати програму.
+
+  GOOS=linux go build -o main .
+
+* Перевіряємо
+
+  $ docker run -it example-scratch
+  no such file or directory
+
+Чому? 
+
+Go шукає бібліотекі які були доступні під час компіляції в операційній системі, але їх нема у *docker*from*sratch*
+
+* Компілюємо з усіма залежностями, щоб наверняка
+
+  CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+
+Перевіряємо і...
+
+  $ docker run -it example-scratch
+  Get https://google.com: x509: failed to load system roots and no roots provided
+
+* Додаємо сертифікат, який зазвичай є в ОС
+
+  FROM scratch
+  ADD ca-certificates.crt /etc/ssl/certs/
+  ADD main /
+  CMD ["/main"]
+
+Done!
+
+.caption source1: [[https://blog.codeship.com/building-minimal-docker-containers-for-go-applications/][lding Minimal Docker Containers for Go Applications]]
+.caption source2: [[http://www.jeffsloyer.io/post/cross-compiling-docker-alpine-golang/][Cross Compiling Golang With A Docker Alpine Container]]
 
 * Questions?
 
 * Resources
 
+[[https://www.oreilly.com/ideas/how-to-ship-production-grade-go][How to ship production-grade Go]]
 [[https://npf.io/2017/03/3.5yrs-500k-lines-of-go/][3.5 Years, 500k Lines of Go (Part 1)]]
 [[https://peter.bourgon.org/go-in-production/][Go: Best Practices for Production Environments]]
 [[https://www.iron.io/go-after-2-years-in-production/][Go After 2 Years in Production (2013)]]
@@ -172,3 +365,20 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 [[https://golang.org/doc/code.html][How to Write Go Code]]
 [[https://golang.org/doc/effective_go.html][Effective Go]]
 [[https://github.com/golang/go/wiki/CodeReviewComments][Go Code Review Comments]]
+
+* Спільнота
+
+- Maillists - [[https://groups.google.com/forum/#!forum/golang-dev][golang-dev]] та [[https://groups.google.com/forum/#!forum/golang-nuts][golang-nuts]] (high-traffic!)
+- Reddit - [[https://www.reddit.com/r/golang][https://www.reddit.com/r/golang]]
+- Twitter - [[https://twitter.com/golang_news][https://twitter.com/golang_news]]
+- Тижневик - [[http://golangweekly.com][http://golangweekly.com]]
+- Slack-спільноти - [[https://blog.gopheracademy.com/gophers-slack-community/][Gophers]] та [[http://gophers.in.ua][GolangUA]]
+- Браві хлопаки з Google та не тільки - [[https://dave.cheney.net][Dave Cheney]], [[https://twitter.com/enneff][Andrew Gerrand]],
+[[https://twitter.com/rob_pike][Rob Pike]], [[https://twitter.com/bradfitz][Brad Fitzpatrick]] та інші
+
+* Конференції
+
+- [[https://www.facebook.com/events/1771847236475359/][GDG DevFest Ukraine 2017]] 13-14 Oct (Lviv)
+- [[https://www.dotgo.eu][dotGo]] 6 Nov 2017 (Paris) [Promo: GOLANGUA - 20%]
+
+.image ./0428-go-in-prod/logo-dotgo.png _ 600
