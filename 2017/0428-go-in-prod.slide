@@ -143,7 +143,15 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 
 * Зручні інструменти
 
-.html ./0428-go-in-prod/tool-list.html
+- *go*build*, which builds Go binaries using only information in the source files themselves, no separate makefiles
+- *go*test*, for unit testing and microbenchmarks
+- *go*fmt*, for formatting code
+- *go*get*, for retrieving and installing remote packages
+- *go*vet*, a static analyzer looking for potential errors in code
+- *go*run*, a shortcut for building and executing code
+- *godoc*, for displaying documentation or serving it via HTTP
+- *gorename*, for renaming variables, functions, and so on in a type-safe way
+- *go*generate*, a standard way to invoke code generators
 .caption source: [[https://github.com/golang/go/wiki/CodeTools][Code Tools]]
 .caption source: [[https://github.com/golang/go/wiki/GoGenerateTools][Generate Tools]]
 .caption source: [[https://github.com/golang/go/wiki/PackageManagementTools][Package Management Tools]]
@@ -271,7 +279,7 @@ Production-grade code - коли ви знаєте про такі можлив�
 - Відмінність від поведінки інших мов (вигляд схожий, результат не передбачуваний)
 
   for i := range []byte(`Hello`) {
-     pintln(i)
+     println(i)
   }
 
 .link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas
