@@ -1,5 +1,5 @@
 Strong and weak sides of Golang in production
-28 Apr 2017
+12 May 2017
 Tags: GolangUA, Go
 
 Ivan Kutuzov
@@ -28,17 +28,17 @@ Go був створений інженерами для інженерів. [[h
 
 .image ./0428-go-in-prod/gopher_big.png _ 400
 
-* Хто вже використовує (з виступів 2015 року)
+* Хто вже використовує
 
 .image ./0428-go-in-prod/logo-1.png 250 _
 .image ./0428-go-in-prod/logo-2.png 250 _
 
-* Хто вже використовує (з виступів 2015 року)
+* Хто вже використовує
 
 .image ./0428-go-in-prod/logo-3.png 250 _
 .image ./0428-go-in-prod/logo-4.png 250 _
 
-* Хто вже використовує (з виступів 2015 року)
+* Хто вже використовує
 
 .image ./0428-go-in-prod/logo-5.png 250 _
 .image ./0428-go-in-prod/logo-6.png 250 _
@@ -114,7 +114,7 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 	
 	func HelloServer(w http.ResponseWriter, req *http.Request) {
 		log.Println(req.URL)
-		fmt.Fprintf(w, "Hello, #Pivorak!\nURL = %s\n", req.URL)
+		fmt.Fprintf(w, "Hello, Gophers!\nURL = %s\n", req.URL)
 	}
 	
 	func main() {
@@ -163,14 +163,10 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 - Мікросервіси всіх видів (+фреймворки GoKit, Kite, etc) 
 - Кластерні штуки для датацентрів (etcd, consul, packer, vault etc)
 - Контейнери та оркестрація (Kubernetes, Racket, Docker, Tectonic, etc)
-
-* Де ще можна
-
 - Бази даних (CockroachDB, InfluxDB, Cayley, Tiedot, Aerospike, etc)
 - REST-бекенди та SPA-бекенди (restful, gorilla, echo, etc)
 - Навіть вебсайти (hugo, gin, echo, negroni, etc. +фреймворки Revel, Beego, etc.)
 - Утиліти командного рядка (aws-sdk, mongotools, docker, etc.)
-- Devops штуки, бекап, менеджмент систем і т.д.
 .caption source: [[https://youtu.be/nbAX1yEdteo?list=PLb4zKafb8ilKQz0Rs8Jp-mlzVIzXBrQen][Ivan Daniluk Kyiv Go Meetup 2015 - Go in 2015]]
 
 * Stdlib
@@ -190,7 +186,7 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 [[https://landing.google.com/sre/book.html][Site Reliability Engineering]]
 .caption Edited by Betsy Beyer, Chris Jones, Jennifer Petoff and Niall Richard Murphy
 
-Members of the SRE team explain how their engagement with the entire software lifecycle has enabled Google to build, deploy, monitor, and maintain some of the largest software systems in the world.
+Учасники команди SRE діляться власним досвідом з повним життєвим циклом ПО y Google, стосовно: побудови, розгортання, моніторінгу та підтримки oднієї з найбільших систем у світі.
 
 * Production-grade Go
 
@@ -203,6 +199,17 @@ Production-grade code - коли ви знаєте про такі можлив�
 * Поради
 
 - Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
+
+  _, err := ioutil.ReadAll(r)
+  if err != nil {
+          return errors.Wrap(err, "read failed") // "read failed: improperly formatted data"
+  }
+
+
+Щоб мати щось подібне:
+
+  "starting app: querying database: loading migrations: run migration #12: pq: invalid syntax near 'JOIN'"
+
 
 * Поради
 
@@ -247,6 +254,8 @@ Production-grade code - коли ви знаєте про такі можлив�
 - Додавайте та відслідковуйти Метрики сервису. Це надає більше інформації по поведінці та швидкодії вашої програми. На ринку існує багато компаній які надають послуги збирання, зберіганя, аналізу ваших метрик: Datadog, Prometheus, StatsD + Graphite та інші.
 - Тестуйте більше ніж вважаєте потрібним
 
+  go test -cover >= 80%
+
 * Чи все так радужно?
 
 .image ./0428-go-in-prod/panda-rainbow.jpg _ 900
@@ -261,6 +270,8 @@ Production-grade code - коли ви знаєте про такі можлив�
 .caption source: [[https://divan.github.io/posts/go_complain_howto/][How to complain about Go]]
 .caption more complains: [[https://github.com/ksimka/go-is-not-good][list of articles complaining that go (golang) isn't good enough]]
 
+Але з практикою це проходить :)
+
 * Крилаті всилови Golang
 
 - A little copying is better than a little dependency.
@@ -273,6 +284,8 @@ Production-grade code - коли ви знаєте про такі можлив�
 - Documentation is for users.
 - Don't panic.
 .caption Simple, Poetic, Pithy: [[https://go-proverbs.github.io/][Go Proverbs]]
+
+* Пастки при переході на Go
 
 * Пастки
 
@@ -371,6 +384,76 @@ Done!
 
 .caption source1: [[https://blog.codeship.com/building-minimal-docker-containers-for-go-applications/][Building Minimal Docker Containers for Go Applications]]
 .caption source2: [[http://www.jeffsloyer.io/post/cross-compiling-docker-alpine-golang/][Cross Compiling Golang With A Docker Alpine Container]]
+
+* І ще трохи про production
+
+Пам'ятаєте приклад простенького *Hellow,*world* http service?
+
+	package main
+	
+	import (
+		"fmt"
+		"log"
+		"net/http"
+	)
+	
+	func HelloServer(w http.ResponseWriter, req *http.Request) {
+		log.Println(req.URL)
+		fmt.Fprintf(w, "Hello, SS employee!\nURL = %s\n", req.URL)
+	}
+	
+	func main() {
+		fmt.Println("please connect to localhost:3000/hello")
+		http.HandleFunc("/hello", HelloServer)
+		log.Fatal(http.ListenAndServe(":3000", nil))
+	}
+
+* Production reality:
+
+.image ./0428-go-in-prod/http-serv-timeouts.png _ 900
+.caption [[https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/][So you want to expose Go on the Internet]]
+
+* HTTP/2
+
+HTTP/2 is enabled automatically on any Go 1.6+ server if:
+
+- the request is served over *TLS/HTTPS*
+- *Server.TLSNextProto* is *nil* (setting it to an empty map is how you disable HTTP/2)
+- *Server.TLSConfig* is set and *ListenAndServeTLS* is used or
+- *Serve* is used and *tls.Config.NextProtos* includes "h2" (like []string{"h2", "http/1.1"}, since Serve is called too late to auto-modify the TLS Config)
+
+* Ідеологія Go - складні рішення за розробником
+
+  srv := &http.Server{
+      ReadTimeout:  5 * time.Second,
+      WriteTimeout: 10 * time.Second,
+      IdleTimeout:  120 * time.Second,
+      TLSConfig:    &tls.Config{
+        // Causes servers to use Go's default ciphersuite preferences,
+        PreferServerCipherSuites: true,//which are tuned to avoid attacks.Does nothing on clients.
+        CurvePreferences: []tls.CurveID{ // Only use curves which have assembly implementations
+            tls.CurveP256,
+            tls.X25519, // Go 1.8 only
+        },
+        MinVersion: tls.VersionTLS12,
+        CipherSuites: []uint16{
+            tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+            tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+            tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
+            tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,   // Go 1.8 only
+            tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+            ...
+        },
+      },
+    Handler:      http.HandlerFunc(HelloServer),
+  }
+
+* Conclusions
+
+- Писати рішення на Go прикольно (легко, весело, ефективно, швидко помітен результат)
+- Потрібно розумітись на предметній області (не запрацює поки не зрозумієш як воно має бути)
+- Бути готовим писати код :) трохи більше ніж очикується
+- Стаєш незалежним від мови, бо розумієшся на технологіях
 
 * Questions?
 
