@@ -228,7 +228,7 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 
 * Сюрпризі для нових Gopher-ів
 
-.link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas
+.link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas (Ivan Daniluk)
 .link http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/ 50 Shades of Go: Traps, Gotchas, and Common Mistakes for New Golang Devs
 
 * Сюрпризі для нових Gopher-ів
@@ -237,7 +237,7 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 .link http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/ 50 Shades of Go: Traps, Gotchas, and Common Mistakes for New Golang Devs
 .link https://go-traps.appspot.com/
 
-* Go is a megicless language
+* Go is a magicless language
 
 Пам'ятаєте приклад простенького *Hellow,*world* http service?
 
@@ -316,6 +316,8 @@ HTTP/2 is enabled automatically on any Go 1.6+ server if:
 Production-grade code - коли ви знаєте про такі можливості і передбачаєте їх обробку, запобігаєте появі або готуєте план дій у таких випадках.
 .caption source: [[https://www.oreilly.com/ideas/how-to-ship-production-grade-go][How to ship production-grade Go]]
 
+* Які ознаки production ви можете навести?
+
 * Поради (додавати контектс у значення помилки)
 
 - Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
@@ -382,6 +384,7 @@ Production-grade code - коли ви знаєте про такі можлив�
 - Потрібно розумітись на предметній області (не запрацює поки не зрозумієш як воно має бути)
 - Бути готовим писати код :) трохи більше ніж у мовах до яких ви звикли
 - Стаєш незалежним від мови, бо розумієшся на технологіях
+- Маючи ядро команди, 2/3 можуть бути без досвіду роботи з Golang
 
 * Questions?
 
