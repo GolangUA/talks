@@ -224,7 +224,7 @@ _Зменьшення_шуму_призводе_до_покращення_спр
   }
 
 .link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas
-.link https://you.be/ Francies Campoy Folse positive friends
+.link https://youtu.be/B-r3Wf_I2Lk Francesc Campoy Flores - Things I learned teaching Go (dotGo 2014)
 
 * Сюрпризі для нових Gopher-ів
 
@@ -407,10 +407,3 @@ Production-grade code - коли ви знаєте про такі можлив�
 - Slack-спільноти - [[https://blog.gopheracademy.com/gophers-slack-community/][Gophers]] та [[http://gophers.in.ua][GolangUA]]
 - Браві хлопаки з Google та не тільки - [[https://dave.cheney.net][Dave Cheney]], [[https://twitter.com/enneff][Andrew Gerrand]],
 [[https://twitter.com/rob_pike][Rob Pike]], [[https://twitter.com/bradfitz][Brad Fitzpatrick]] та інші
-
-* Конференції
-
-- [[https://www.facebook.com/events/1771847236475359/][GDG DevFest Ukraine 2017]] 13-14 Oct (Lviv)
-- [[https://www.dotgo.eu][dotGo]] 6 Nov 2017 (Paris) [Promo: GOLANGUA - 20%]
-
-.image ./0428-go-in-prod/logo-dotgo.png _ 600
