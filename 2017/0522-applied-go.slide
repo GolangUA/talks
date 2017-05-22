@@ -237,8 +237,71 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 .link http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/ 50 Shades of Go: Traps, Gotchas, and Common Mistakes for New Golang Devs
 .link https://go-traps.appspot.com/
 
+* Go is a megicless language
 
-* What about production?
+Пам'ятаєте приклад простенького *Hellow,*world* http service?
+
+	package main
+	
+	import (
+		"fmt"
+		"log"
+		"net/http"
+	)
+	
+	func HelloServer(w http.ResponseWriter, req *http.Request) {
+		log.Println(req.URL)
+		fmt.Fprintf(w, "Hello, Gophers!\nURL = %s\n", req.URL)
+	}
+	
+	func main() {
+		fmt.Println("please connect to localhost:3000/hello")
+		http.HandleFunc("/hello", HelloServer)
+		log.Fatal(http.ListenAndServe(":3000", nil))
+	}
+
+* Production reality: What do you know about http timeouts?
+
+.image ./0428-go-in-prod/http-serv-timeouts.png _ 900
+.caption [[https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/][So you want to expose Go on the Internet]]
+
+* HTTP/2
+
+HTTP/2 is enabled automatically on any Go 1.6+ server if:
+
+- the request is served over *TLS/HTTPS*
+- *Server.TLSNextProto* is *nil* (setting it to an empty map is how you disable HTTP/2)
+- *Server.TLSConfig* is set and *ListenAndServeTLS* is used or
+- *Serve* is used and *tls.Config.NextProtos* includes "h2" (like []string{"h2", "http/1.1"}, since Serve is called too late to auto-modify the TLS Config)
+
+* Ідеологія Go - складні рішення за розробником
+
+  srv := &http.Server{
+      ReadTimeout:  5 * time.Second,
+      WriteTimeout: 10 * time.Second,
+      IdleTimeout:  120 * time.Second,
+      TLSConfig:    &tls.Config{
+        // Causes servers to use Go's default ciphersuite preferences,
+        PreferServerCipherSuites: true,//which are tuned to avoid attacks.Does nothing on clients.
+        CurvePreferences: []tls.CurveID{ // Only use curves which have assembly implementations
+            tls.CurveP256,
+            tls.X25519, // Go 1.8 only
+        },
+        MinVersion: tls.VersionTLS12,
+        CipherSuites: []uint16{
+            tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+            tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+            tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
+            tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,   // Go 1.8 only
+            tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+            ...
+        },
+      },
+    Handler:      http.HandlerFunc(HelloServer),
+  }
+
+
+* Site Reliability Engineering
 
 [[https://landing.google.com/sre/book.html][Site Reliability Engineering]]
 .caption Edited by Betsy Beyer, Chris Jones, Jennifer Petoff and Niall Richard Murphy
@@ -313,151 +376,11 @@ Production-grade code - коли ви знаєте про такі можлив�
 
   go test -cover >= 80%
 
-* Що з приводу контейнеризації?
-
-Статичний файл без жодних залежностей, кажете...
-
-  package main
-  import (
-      "fmt"
-      "io/ioutil"
-      "net/http"
-      "os"
-  )
-  func main() {
-      resp, err := http.Get("https://google.com")
-      check(err)
-      body, err := ioutil.ReadAll(resp.Body)
-      check(err)
-      fmt.Println(len(body))
-  }
-  func check(err error) {
-      if err != nil {
-          fmt.Println(err)
-          os.Exit(1)
-      }
-  }
-
-* Dockerize
-
-  FROM golang:latest 
-  RUN mkdir /app 
-  ADD . /app/ 
-  WORKDIR /app 
-  RUN go build -o main . 
-  CMD ["/app/main"]
-
-Але зачекайте, `golang:latest` 267 MB
-.caption source: [[https://hub.docker.com/r/library/golang/tags/][docker hub]]
-
-* Docker from sratch
-
-  FROM scratch
-  ADD main /
-  CMD ["/main"]
-
-Але спочатку ми маємо скомпілювати програму.
-
-  GOOS=linux go build -o main .
-
-* Перевіряємо
-
-  $ docker run -it example-scratch
-  no such file or directory
-
-Чому? 
-
-Go шукає бібліотеки які були доступні під час компіляції в операційній системі, але їх нема у *docker*from*sratch*
-
-* Компілюємо з усіма залежностями, щоб наверняка
-
-  CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
-
-Перевіряємо і...
-
-  $ docker run -it example-scratch
-  Get https://google.com: x509: failed to load system roots and no roots provided
-
-* Додаємо сертифікат, який зазвичай є в ОС
-
-  FROM scratch
-  ADD ca-certificates.crt /etc/ssl/certs/
-  ADD main /
-  CMD ["/main"]
-
-Done!
-
-.caption source1: [[https://blog.codeship.com/building-minimal-docker-containers-for-go-applications/][Building Minimal Docker Containers for Go Applications]]
-.caption source2: [[http://www.jeffsloyer.io/post/cross-compiling-docker-alpine-golang/][Cross Compiling Golang With A Docker Alpine Container]]
-
-* І ще трохи про production
-
-Пам'ятаєте приклад простенького *Hellow,*world* http service?
-
-	package main
-	
-	import (
-		"fmt"
-		"log"
-		"net/http"
-	)
-	
-	func HelloServer(w http.ResponseWriter, req *http.Request) {
-		log.Println(req.URL)
-		fmt.Fprintf(w, "Hello, SS employee!\nURL = %s\n", req.URL)
-	}
-	
-	func main() {
-		fmt.Println("please connect to localhost:3000/hello")
-		http.HandleFunc("/hello", HelloServer)
-		log.Fatal(http.ListenAndServe(":3000", nil))
-	}
-
-* Production reality:
-
-.image ./0428-go-in-prod/http-serv-timeouts.png _ 900
-.caption [[https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/][So you want to expose Go on the Internet]]
-
-* HTTP/2
-
-HTTP/2 is enabled automatically on any Go 1.6+ server if:
-
-- the request is served over *TLS/HTTPS*
-- *Server.TLSNextProto* is *nil* (setting it to an empty map is how you disable HTTP/2)
-- *Server.TLSConfig* is set and *ListenAndServeTLS* is used or
-- *Serve* is used and *tls.Config.NextProtos* includes "h2" (like []string{"h2", "http/1.1"}, since Serve is called too late to auto-modify the TLS Config)
-
-* Ідеологія Go - складні рішення за розробником
-
-  srv := &http.Server{
-      ReadTimeout:  5 * time.Second,
-      WriteTimeout: 10 * time.Second,
-      IdleTimeout:  120 * time.Second,
-      TLSConfig:    &tls.Config{
-        // Causes servers to use Go's default ciphersuite preferences,
-        PreferServerCipherSuites: true,//which are tuned to avoid attacks.Does nothing on clients.
-        CurvePreferences: []tls.CurveID{ // Only use curves which have assembly implementations
-            tls.CurveP256,
-            tls.X25519, // Go 1.8 only
-        },
-        MinVersion: tls.VersionTLS12,
-        CipherSuites: []uint16{
-            tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-            tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-            tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
-            tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,   // Go 1.8 only
-            tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-            ...
-        },
-      },
-    Handler:      http.HandlerFunc(HelloServer),
-  }
-
 * Conclusions
 
 - Писати рішення на Go прикольно (легко, весело, ефективно, швидко помітен результат)
 - Потрібно розумітись на предметній області (не запрацює поки не зрозумієш як воно має бути)
-- Бути готовим писати код :) трохи більше ніж очикується
+- Бути готовим писати код :) трохи більше ніж у мовах до яких ви звикли
 - Стаєш незалежним від мови, бо розумієшся на технологіях
 
 * Questions?
