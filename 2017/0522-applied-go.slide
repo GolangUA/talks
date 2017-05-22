@@ -1,0 +1,493 @@
+Golang at practice
+22 May 2017
+Tags: GolangUA, Go
+
+Ivan Kutuzov
+SE, SoftServe
+https://golang.org.ua
+@GolangUA
+@arbrix
+
+* Про себе
+
+- Попередній досвід: 10+ років web/fullstack developer (PHP, JS)
+- Досвід з Go: 2+ років
+- активний діяч спільноти GolangUA (https://golang.org.ua)
+- Twitter: @arbrix
+
+.image ./0428-go-in-prod/ik-face.png 350 _
+
+* Чому Go
+
+Go був створений інженерами для інженерів. [[https://talks.golang.org/2014/taste.slide#2][Robert Griesemer 2014]]
+.caption source: [[https://golang.org/doc/faq#What_is_the_purpose_of_the_project][What is the purpose of the project]]
+
+- зменьшити вартість підтримки програмного коду
+- спростити розробку нових продуктів
+- ефективне використання ресурсів
+
+.image ./0428-go-in-prod/gopher_big.png _ 400
+
+* Хто вже використовує
+
+.image ./0428-go-in-prod/logo-1.png 250 _
+.image ./0428-go-in-prod/logo-2.png 250 _
+
+* Хто вже використовує
+
+.image ./0428-go-in-prod/logo-3.png 250 _
+.image ./0428-go-in-prod/logo-4.png 250 _
+
+* Хто вже використовує
+
+.image ./0428-go-in-prod/logo-5.png 250 _
+.image ./0428-go-in-prod/logo-6.png 250 _
+
+* Хто ще використовує
+
+- [[https://github.com/golang/go/wiki/GoUsers][GoUsers]] ~600 компаній
+- [[https://github.com/golang/go/wiki/SuccessStories][Success Stories]]
+
+.image ./0428-go-in-prod/gophers5th.jpg _ 800
+
+* Переваги Go
+
+- Компільована мова програмування
+- Строго-типізована
+- Автоматичнe управління пам'яттю
+- Проста
+- Швидка
+- Якісна та потужна стандартна бібліотека
+- Широкий набір інструментів (go tools)
+
+* Що означає проста? Порівняємо з Java...
+
+	public static int IndexOfAny(String str, char[] chars) {
+		if (isEmpty(str) || ArrayUtils.isEmpty(chars)) {
+			return -1;
+		}
+		for (int i = 0; i < str.length(); i++) {
+			char ch = str.charAt(i);
+			for (int j = 0; j < chars.length; j++) {
+				if (chars[j] == ch) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
+299 chars (100%), 101 tokens (100%)
+
+* Реалізація на Go
+
+	func IndexOfAny(str string, chars []rune) int {
+		if len(str) == 0 || len(chars) == 0 {
+			return -1
+		}
+		for i, ch := range str {
+			for _, match := range chars {
+				if ch == match {
+					return i
+				}
+			}
+		}
+		return -1
+	}
+
+217 chars (73%), 62 tokens (61%)
+
+Майже на 30% меньше тексту і близько 40% переваги по кількості знаків!
+
+_Зменьшення_шуму_призводе_до_покращення_сприйняття._
+.caption source: [[https://talks.golang.org/2014/taste.slide#2][Robert Griesemer 2014]]
+
+* Приклад простого HTTP серверу
+
+	package main
+	
+	import (
+		"fmt"
+		"log"
+		"net/http"
+	)
+	
+	func HelloServer(w http.ResponseWriter, req *http.Request) {
+		log.Println(req.URL)
+		fmt.Fprintf(w, "Hello, Gophers!\nURL = %s\n", req.URL)
+	}
+	
+	func main() {
+		fmt.Println("please connect to localhost:3000/hello")
+		http.HandleFunc("/hello", HelloServer)
+		log.Fatal(http.ListenAndServe(":3000", nil))
+	}
+
+* Звідки швидкість?
+
+- компіляція в бінарний код
+- підтримка concurrency (можливість одночасного виконання операцій)
+
+	func First(query string, replicas ...Search) Result {
+	    c := make(chan Result)
+	    searchReplica := func(i int) { c <- replicas[i].Search(query) }
+	    for i := range replicas {
+	        go searchReplica(i)
+	    }
+	    return <-c
+	}
+
+Без блокувань, без перевірки умов, без зворотніх викликів.
+[[https://talks.golang.org/2012/concurrency.slide][Go Concurrency Patterns 2012]]
+[[https://talks.golang.org/2013/advconc.slide#1][Advanced Go Concurrency Patterns 2013]]
+
+* Зручні інструменти
+
+- *go*build*, which builds Go binaries using only information in the source files themselves, no separate makefiles
+- *go*test*, for unit testing and microbenchmarks
+- *go*fmt*, for formatting code
+- *go*get*, for retrieving and installing remote packages
+- *go*vet*, a static analyzer looking for potential errors in code
+- *go*run*, a shortcut for building and executing code
+- *godoc*, for displaying documentation or serving it via HTTP
+- *gorename*, for renaming variables, functions, and so on in a type-safe way
+- *go*generate*, a standard way to invoke code generators
+.caption source: [[https://github.com/golang/go/wiki/CodeTools][Code Tools]]
+.caption source: [[https://github.com/golang/go/wiki/GoGenerateTools][Generate Tools]]
+.caption source: [[https://github.com/golang/go/wiki/PackageManagementTools][Package Management Tools]]
+
+* Де застосовують Go
+
+- Cloud/Networking сервери, роутери, проксі та бекенди
+- Distributed системи та storage/FS, внутрішня інфраструктура 
+- Мікросервіси всіх видів (+фреймворки GoKit, Kite, etc) 
+- Кластерні штуки для датацентрів (etcd, consul, packer, vault etc)
+- Контейнери та оркестрація (Kubernetes, Racket, Docker, Tectonic, etc)
+- Бази даних (CockroachDB, InfluxDB, Cayley, Tiedot, Aerospike, etc)
+- REST-бекенди та SPA-бекенди (restful, gorilla, echo, etc)
+- Навіть вебсайти (hugo, +фреймворки gin, echo, negroni, Revel, Beego, etc.)
+- Утиліти командного рядка (aws-sdk, mongotools, docker, etc.)
+.caption source: [[https://youtu.be/nbAX1yEdteo?list=PLb4zKafb8ilKQz0Rs8Jp-mlzVIzXBrQen][Ivan Daniluk Kyiv Go Meetup 2015 - Go in 2015]]
+
+* Stdlib
+
+~140 Пакетів
+
+.image ./0428-go-in-prod/golang-stdlib-tag-cloud.png _ 900
+
+* Різноманітність бібліотек
+
+.link https://awesome-go.com
+.link https://godoc.org
+.link http://go-search.org/search go-search.org - 756881 packages
+
+
+* From the theory to practice
+
+* Чи все так просто?
+
+.image ./0428-go-in-prod/panda-rainbow.jpg _ 900
+
+* Новенькі часто скаржаться на:
+
+- error handling / no exceptions
+- no generics
+- stuck in 70’s
+- no OOP
+- too opinionated
+.caption source: [[https://divan.github.io/posts/go_complain_howto/][How to complain about Go]]
+.caption more complains: [[https://github.com/ksimka/go-is-not-good][list of articles complaining that go (golang) isn't good enough]]
+
+Але з практикою це проходить :)
+
+* Ideology of Golang
+
+* Крилаті всилови Golang
+
+- A little copying is better than a little dependency.
+- Make the zero value useful.
+- The bigger the interface, the weaker the abstraction.
+- Clear is better than clever.
+- Reflection is never clear.
+- Errors are values.
+- Don't just check errors, handle them gracefully.
+- Documentation is for users.
+- Don't panic.
+.caption Simple, Poetic, Pithy: [[https://go-proverbs.github.io/][Go Proverbs]]
+
+* Сюрпризі для нових Gopher-ів
+
+- Відмінність від поведінки інших мов (вигляд схожий, результат не передбачуваний)
+
+  for i := range []byte(`Hello`) {
+     println(i)
+  }
+
+.link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas
+.link https://you.be/ Francies Campoy Folse positive friends
+
+* Сюрпризі для нових Gopher-ів
+
+.link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas
+.link http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/ 50 Shades of Go: Traps, Gotchas, and Common Mistakes for New Golang Devs
+
+* Сюрпризі для нових Gopher-ів
+
+.link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas
+.link http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/ 50 Shades of Go: Traps, Gotchas, and Common Mistakes for New Golang Devs
+.link https://go-traps.appspot.com/
+
+
+* What about production?
+
+[[https://landing.google.com/sre/book.html][Site Reliability Engineering]]
+.caption Edited by Betsy Beyer, Chris Jones, Jennifer Petoff and Niall Richard Murphy
+
+Учасники команди SRE діляться власним досвідом з повним життєвим циклом ПО y Google, стосовно: побудови, розгортання, моніторінгу та підтримки oднієї з найбільших систем у світі.
+
+* Production-grade Go
+
+Розробка Production-grade Go програм відрізняється від звичайної.
+Велика різниця між вашим кодом і вашим кодом в production. Ви маєте знати усі шляхи які можуть призвести до падіння сервісу!
+
+Production-grade code - коли ви знаєте про такі можливості і передбачаєте їх обробку, запобігаєте появі або готуєте план дій у таких випадках.
+.caption source: [[https://www.oreilly.com/ideas/how-to-ship-production-grade-go][How to ship production-grade Go]]
+
+* Поради (додавати контектс у значення помилки)
+
+- Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
+
+  _, err := ioutil.ReadAll(r)
+  if err != nil {
+          return errors.Wrap(err, "read failed") // "read failed: improperly formatted data"
+  }
+
+
+Щоб мати щось подібне:
+
+  "starting app: querying database: loading migrations: run migration #12: pq: invalid syntax near 'JOIN'"
+
+
+* Поради (monitor panic situation)
+
+- Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
+- Налаштуйте сповіщення у випадках *panic*
+
+* Поради (structure logging)
+
+- Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
+- Налаштуйте сповіщення у випадках *panic*
+- Використовуйте структуровані логи
+
+	import log "github.com/Sirupsen/logrus"
+
+	func main() {
+	  log.SetFormatter(&log.JSONFormatter{})
+	
+	  log.WithFields(log.Fields{
+	    "userId": 1,
+	    "server": "www.google.com",
+	  }).Info("Redirecting user")
+	
+	}
+
+
+	{"level":"info","msg":"Redirecting user","server":"www.google.com",
+	"time":"2017-03-25T17:00:00-08:00","userId":1}
+
+
+* Поради (metrics: add, collect, analyze)
+
+- Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
+- Налаштуйте сповіщення у випадках *panic*
+- Використовуйте структуровані логи
+- Додавайте та відcлідковуйте метрики сервiсу. Це надає більше інформації по поведінці та швидкодії вашої програми. На ринку існує багато компаній які надають послуги збирання, зберіганя, аналізу ваших метрик: Datadog, Prometheus, StatsD + Graphite та інші.
+
+* Поради (test comverage)
+
+- Робіть значення помилок змістовним. Обгортайте значення новим контекстом.
+- Налаштуйте сповіщення у випадках *panic*
+- Використовуйте структуровані логи
+- Додавайте та відслідковуйти Метрики сервису. Це надає більше інформації по поведінці та швидкодії вашої програми. На ринку існує багато компаній які надають послуги збирання, зберіганя, аналізу ваших метрик: Datadog, Prometheus, StatsD + Graphite та інші.
+- Тестуйте більше ніж вважаєте потрібним
+
+  go test -cover >= 80%
+
+* Що з приводу контейнеризації?
+
+Статичний файл без жодних залежностей, кажете...
+
+  package main
+  import (
+      "fmt"
+      "io/ioutil"
+      "net/http"
+      "os"
+  )
+  func main() {
+      resp, err := http.Get("https://google.com")
+      check(err)
+      body, err := ioutil.ReadAll(resp.Body)
+      check(err)
+      fmt.Println(len(body))
+  }
+  func check(err error) {
+      if err != nil {
+          fmt.Println(err)
+          os.Exit(1)
+      }
+  }
+
+* Dockerize
+
+  FROM golang:latest 
+  RUN mkdir /app 
+  ADD . /app/ 
+  WORKDIR /app 
+  RUN go build -o main . 
+  CMD ["/app/main"]
+
+Але зачекайте, `golang:latest` 267 MB
+.caption source: [[https://hub.docker.com/r/library/golang/tags/][docker hub]]
+
+* Docker from sratch
+
+  FROM scratch
+  ADD main /
+  CMD ["/main"]
+
+Але спочатку ми маємо скомпілювати програму.
+
+  GOOS=linux go build -o main .
+
+* Перевіряємо
+
+  $ docker run -it example-scratch
+  no such file or directory
+
+Чому? 
+
+Go шукає бібліотеки які були доступні під час компіляції в операційній системі, але їх нема у *docker*from*sratch*
+
+* Компілюємо з усіма залежностями, щоб наверняка
+
+  CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+
+Перевіряємо і...
+
+  $ docker run -it example-scratch
+  Get https://google.com: x509: failed to load system roots and no roots provided
+
+* Додаємо сертифікат, який зазвичай є в ОС
+
+  FROM scratch
+  ADD ca-certificates.crt /etc/ssl/certs/
+  ADD main /
+  CMD ["/main"]
+
+Done!
+
+.caption source1: [[https://blog.codeship.com/building-minimal-docker-containers-for-go-applications/][Building Minimal Docker Containers for Go Applications]]
+.caption source2: [[http://www.jeffsloyer.io/post/cross-compiling-docker-alpine-golang/][Cross Compiling Golang With A Docker Alpine Container]]
+
+* І ще трохи про production
+
+Пам'ятаєте приклад простенького *Hellow,*world* http service?
+
+	package main
+	
+	import (
+		"fmt"
+		"log"
+		"net/http"
+	)
+	
+	func HelloServer(w http.ResponseWriter, req *http.Request) {
+		log.Println(req.URL)
+		fmt.Fprintf(w, "Hello, SS employee!\nURL = %s\n", req.URL)
+	}
+	
+	func main() {
+		fmt.Println("please connect to localhost:3000/hello")
+		http.HandleFunc("/hello", HelloServer)
+		log.Fatal(http.ListenAndServe(":3000", nil))
+	}
+
+* Production reality:
+
+.image ./0428-go-in-prod/http-serv-timeouts.png _ 900
+.caption [[https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/][So you want to expose Go on the Internet]]
+
+* HTTP/2
+
+HTTP/2 is enabled automatically on any Go 1.6+ server if:
+
+- the request is served over *TLS/HTTPS*
+- *Server.TLSNextProto* is *nil* (setting it to an empty map is how you disable HTTP/2)
+- *Server.TLSConfig* is set and *ListenAndServeTLS* is used or
+- *Serve* is used and *tls.Config.NextProtos* includes "h2" (like []string{"h2", "http/1.1"}, since Serve is called too late to auto-modify the TLS Config)
+
+* Ідеологія Go - складні рішення за розробником
+
+  srv := &http.Server{
+      ReadTimeout:  5 * time.Second,
+      WriteTimeout: 10 * time.Second,
+      IdleTimeout:  120 * time.Second,
+      TLSConfig:    &tls.Config{
+        // Causes servers to use Go's default ciphersuite preferences,
+        PreferServerCipherSuites: true,//which are tuned to avoid attacks.Does nothing on clients.
+        CurvePreferences: []tls.CurveID{ // Only use curves which have assembly implementations
+            tls.CurveP256,
+            tls.X25519, // Go 1.8 only
+        },
+        MinVersion: tls.VersionTLS12,
+        CipherSuites: []uint16{
+            tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+            tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+            tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
+            tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,   // Go 1.8 only
+            tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+            ...
+        },
+      },
+    Handler:      http.HandlerFunc(HelloServer),
+  }
+
+* Conclusions
+
+- Писати рішення на Go прикольно (легко, весело, ефективно, швидко помітен результат)
+- Потрібно розумітись на предметній області (не запрацює поки не зрозумієш як воно має бути)
+- Бути готовим писати код :) трохи більше ніж очикується
+- Стаєш незалежним від мови, бо розумієшся на технологіях
+
+* Questions?
+
+* Resources
+
+[[https://www.oreilly.com/ideas/how-to-ship-production-grade-go][How to ship production-grade Go]]
+[[https://npf.io/2017/03/3.5yrs-500k-lines-of-go/][3.5 Years, 500k Lines of Go (Part 1)]]
+[[https://peter.bourgon.org/go-in-production/][Go: Best Practices for Production Environments]]
+[[https://www.iron.io/go-after-2-years-in-production/][Go After 2 Years in Production (2013)]]
+[[https://gotocon.com/dl/goto-chicago-2016/slides/TravisReeder_GOInProduction.pdf][Go in production 2016]]
+
+
+[[https://golang.org/doc/code.html][How to Write Go Code]]
+[[https://golang.org/doc/effective_go.html][Effective Go]]
+[[https://github.com/golang/go/wiki/CodeReviewComments][Go Code Review Comments]]
+
+* Спільнота
+
+- Maillists - [[https://groups.google.com/forum/#!forum/golang-dev][golang-dev]] та [[https://groups.google.com/forum/#!forum/golang-nuts][golang-nuts]] (high-traffic!)
+- Reddit - [[https://www.reddit.com/r/golang][https://www.reddit.com/r/golang]]
+- Twitter - [[https://twitter.com/golang_news][https://twitter.com/golang_news]]
+- Тижневик - [[http://golangweekly.com][http://golangweekly.com]]
+- Slack-спільноти - [[https://blog.gopheracademy.com/gophers-slack-community/][Gophers]] та [[http://gophers.in.ua][GolangUA]]
+- Браві хлопаки з Google та не тільки - [[https://dave.cheney.net][Dave Cheney]], [[https://twitter.com/enneff][Andrew Gerrand]],
+[[https://twitter.com/rob_pike][Rob Pike]], [[https://twitter.com/bradfitz][Brad Fitzpatrick]] та інші
+
+* Конференції
+
+- [[https://www.facebook.com/events/1771847236475359/][GDG DevFest Ukraine 2017]] 13-14 Oct (Lviv)
+- [[https://www.dotgo.eu][dotGo]] 6 Nov 2017 (Paris) [Promo: GOLANGUA - 20%]
+
+.image ./0428-go-in-prod/logo-dotgo.png _ 600
