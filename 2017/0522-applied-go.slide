@@ -132,6 +132,10 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 
 * Звідки швидкість?
 
+* Швидка компіляція
+
+.image ./0428-go-in-prod/copile-process.jpg
+
 * Уявимо складний процес
 
 .image ./0428-go-in-prod/gophercomplex1.jpg _ 800
@@ -149,6 +153,7 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 - тачка => компресія, генерація чи передача даних
 - піч => proxy, browser, або інший клієнт
 
+[[https://blog.golang.org/concurrency-is-not-parallelism][Blog post: Concurrency is not Parallelism]]
 [[https://talks.golang.org/2012/waza.slide][Concurrency is not Parallelism]]
 [[https://talks.golang.org/2012/concurrency.slide][Go Concurrency Patterns 2012]]
 [[https://talks.golang.org/2013/advconc.slide#1][Advanced Go Concurrency Patterns 2013]]
