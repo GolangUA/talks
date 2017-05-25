@@ -1,5 +1,5 @@
 Golang at practice
-23 May 2017
+25 May 2017
 Tags: GolangUA, Go
 
 Ivan Kutuzov
@@ -8,15 +8,6 @@ https://github.com/GolangUA/talks
 https://golang.org.ua
 @GolangUA
 @arbrix
-
-* Про себе
-
-- Попередній досвід: 10+ років web/fullstack developer (PHP, JS)
-- Досвід з Go: 2+ років
-- активний діяч спільноти GolangUA (https://golang.org.ua)
-- Twitter: @arbrix
-
-.image ./0428-go-in-prod/ik-face.png 350 _
 
 * Agenda
 
@@ -37,25 +28,23 @@ Go був створений інженерами для інженерів. [[h
 
 * Хто вже використовує
 
-.image ./0428-go-in-prod/logo-1.png 250 _
-.image ./0428-go-in-prod/logo-2.png 250 _
+.image ./0428-go-in-prod/logo-set.png _ 1000
 
-* Хто вже використовує
+.caption source: [[https://github.com/golang/go/wiki/GoUsers][GoUsers]] ~600 компаній
+.caption source: [[https://github.com/golang/go/wiki/SuccessStories][Success Stories]]
 
-.image ./0428-go-in-prod/logo-3.png 250 _
-.image ./0428-go-in-prod/logo-4.png 250 _
+* Де застосовують Go
 
-* Хто вже використовує
-
-.image ./0428-go-in-prod/logo-5.png 250 _
-.image ./0428-go-in-prod/logo-6.png 250 _
-
-* Хто ще використовує
-
-- [[https://github.com/golang/go/wiki/GoUsers][GoUsers]] ~600 компаній
-- [[https://github.com/golang/go/wiki/SuccessStories][Success Stories]]
-
-.image ./0428-go-in-prod/gophers5th.jpg _ 800
+- Cloud/Networking сервери, роутери, проксі та бекенди
+- Distributed системи та storage/FS, внутрішня інфраструктура 
+- Мікросервіси всіх видів (+фреймворки GoKit, Kite, etc) 
+- Кластерні штуки для датацентрів (etcd, consul, packer, vault etc)
+- Контейнери та оркестрація (Kubernetes, Racket, Docker, Tectonic, etc)
+- Бази даних (CockroachDB, InfluxDB, Cayley, Tiedot, Aerospike, etc)
+- REST-бекенди та SPA-бекенди (restful, gorilla, echo, etc)
+- Навіть вебсайти (hugo, +фреймворки gin, echo, negroni, Revel, Beego, etc.)
+- Утиліти командного рядка (aws-sdk, mongotools, docker, etc.)
+.caption source: [[https://youtu.be/nbAX1yEdteo?list=PLb4zKafb8ilKQz0Rs8Jp-mlzVIzXBrQen][Ivan Daniluk Kyiv Go Meetup 2015 - Go in 2015]]
 
 * Переваги Go
 
@@ -134,7 +123,7 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 
 * Швидка компіляція
 
-.image ./0428-go-in-prod/copile-process.jpg
+.image ./0428-go-in-prod/compile-process.jpg _ 800
 
 * Уявимо складний процес
 
@@ -184,19 +173,6 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 .caption source: [[https://github.com/golang/go/wiki/CodeTools][Code Tools]]
 .caption source: [[https://github.com/golang/go/wiki/GoGenerateTools][Generate Tools]]
 .caption source: [[https://github.com/golang/go/wiki/PackageManagementTools][Package Management Tools]]
-
-* Де застосовують Go
-
-- Cloud/Networking сервери, роутери, проксі та бекенди
-- Distributed системи та storage/FS, внутрішня інфраструктура 
-- Мікросервіси всіх видів (+фреймворки GoKit, Kite, etc) 
-- Кластерні штуки для датацентрів (etcd, consul, packer, vault etc)
-- Контейнери та оркестрація (Kubernetes, Racket, Docker, Tectonic, etc)
-- Бази даних (CockroachDB, InfluxDB, Cayley, Tiedot, Aerospike, etc)
-- REST-бекенди та SPA-бекенди (restful, gorilla, echo, etc)
-- Навіть вебсайти (hugo, +фреймворки gin, echo, negroni, Revel, Beego, etc.)
-- Утиліти командного рядка (aws-sdk, mongotools, docker, etc.)
-.caption source: [[https://youtu.be/nbAX1yEdteo?list=PLb4zKafb8ilKQz0Rs8Jp-mlzVIzXBrQen][Ivan Daniluk Kyiv Go Meetup 2015 - Go in 2015]]
 
 * From the theory to practice
 
@@ -323,8 +299,6 @@ HTTP/2 is enabled automatically on any Go 1.6+ server if:
 - Стаєш незалежним від мови, бо розумієшся на технологіях
 - Маючи ядро команди, 2/3 можуть бути без досвіду роботи з Golang
 
-* Questions?
-
 * Resources
 
 [[https://golang.org][golang.org]]
@@ -342,3 +316,5 @@ HTTP/2 is enabled automatically on any Go 1.6+ server if:
 - Slack-спільноти - [[https://blog.gopheracademy.com/gophers-slack-community/][Gophers]] та [[http://gophers.in.ua][GolangUA]]
 - Браві хлопаки з Google та не тільки - [[https://dave.cheney.net][Dave Cheney]], [[https://twitter.com/enneff][Andrew Gerrand]],
 [[https://twitter.com/rob_pike][Rob Pike]], [[https://twitter.com/bradfitz][Brad Fitzpatrick]] та інші
+
+* Questions?
