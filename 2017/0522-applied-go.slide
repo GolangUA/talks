@@ -1,0 +1,320 @@
+Golang at practice
+25 May 2017
+Tags: GolangUA, Go
+
+Ivan Kutuzov
+SE, SoftServe
+https://github.com/GolangUA/talks
+https://golang.org.ua
+@GolangUA
+@arbrix
+
+* Agenda
+
+- Засади створення Go
+- Сильні сторони мови
+- Труднощі при старті
+
+* Чому Go
+
+Go був створений інженерами для інженерів. [[https://talks.golang.org/2014/taste.slide#2][Robert Griesemer 2014]]
+.caption source: [[https://golang.org/doc/faq#What_is_the_purpose_of_the_project][What is the purpose of the project]]
+
+- зменьшити вартість підтримки програмного коду
+- спростити розробку нових продуктів
+- ефективне використання ресурсів
+
+.image ./0428-go-in-prod/gopher_big.png _ 400
+
+* Хто вже використовує
+
+.image ./0428-go-in-prod/logo-set.png _ 1000
+
+.caption source: [[https://github.com/golang/go/wiki/GoUsers][GoUsers]] ~600 компаній
+.caption source: [[https://github.com/golang/go/wiki/SuccessStories][Success Stories]]
+
+* Де застосовують Go
+
+- Cloud/Networking сервери, роутери, проксі та бекенди
+- Distributed системи та storage/FS, внутрішня інфраструктура 
+- Мікросервіси всіх видів (+фреймворки GoKit, Kite, etc) 
+- Кластерні штуки для датацентрів (etcd, consul, packer, vault etc)
+- Контейнери та оркестрація (Kubernetes, Racket, Docker, Tectonic, etc)
+- Бази даних (CockroachDB, InfluxDB, Cayley, Tiedot, Aerospike, etc)
+- REST-бекенди та SPA-бекенди (restful, gorilla, echo, etc)
+- Навіть вебсайти (hugo, +фреймворки gin, echo, negroni, Revel, Beego, etc.)
+- Утиліти командного рядка (aws-sdk, mongotools, docker, etc.)
+.caption source: [[https://youtu.be/nbAX1yEdteo?list=PLb4zKafb8ilKQz0Rs8Jp-mlzVIzXBrQen][Ivan Daniluk Kyiv Go Meetup 2015 - Go in 2015]]
+
+* Переваги Go
+
+- Проста
+- Компільована мова програмування
+- Строго-типізована
+- Автоматичнe управління пам'яттю
+- Швидка
+- Якісна та потужна стандартна бібліотека
+- Широкий набір інструментів (go tools)
+
+* Що означає проста? Порівняємо з Java...
+
+	public static int IndexOfAny(String str, char[] chars) {
+		if (isEmpty(str) || ArrayUtils.isEmpty(chars)) {
+			return -1;
+		}
+		for (int i = 0; i < str.length(); i++) {
+			char ch = str.charAt(i);
+			for (int j = 0; j < chars.length; j++) {
+				if (chars[j] == ch) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
+299 chars (100%), 101 tokens (100%)
+
+* Реалізація на Go
+
+	func IndexOfAny(str string, chars []rune) int {
+		if len(str) == 0 || len(chars) == 0 {
+			return -1
+		}
+		for i, ch := range str {
+			for _, match := range chars {
+				if ch == match {
+					return i
+				}
+			}
+		}
+		return -1
+	}
+
+217 chars (73%), 62 tokens (61%)
+
+Майже на 30% меньше тексту і близько 40% переваги по кількості знаків!
+
+_Зменьшення_шуму_призводе_до_покращення_сприйняття._
+.caption source: [[https://talks.golang.org/2014/taste.slide#2][Robert Griesemer 2014]]
+
+* Приклад простого HTTP серверу
+
+	package main
+	
+	import (
+		"fmt"
+		"log"
+		"net/http"
+	)
+	
+	func HelloServer(w http.ResponseWriter, req *http.Request) {
+		log.Println(req.URL)
+		fmt.Fprintf(w, "Hello, Gophers!\nURL = %s\n", req.URL)
+	}
+	
+	func main() {
+		fmt.Println("please connect to localhost:3000/hello")
+		http.HandleFunc("/hello", HelloServer)
+		log.Fatal(http.ListenAndServe(":3000", nil))
+	}
+
+* Звідки швидкість?
+
+* Швидка компіляція
+
+.image ./0428-go-in-prod/compile-process.jpg _ 800
+
+* Уявимо складний процес
+
+.image ./0428-go-in-prod/gophercomplex1.jpg _ 800
+
+* Легко можзна заскейлити
+
+.image ./0428-go-in-prod/gophercomplex6.jpg _ 800
+
+* А тепер повернемось до Computer since
+
+У задачi транспортування та спалювання книжок зімінемо:
+
+- Стопки книжок => web content
+- gopher => CPU
+- тачка => компресія, генерація чи передача даних
+- піч => proxy, browser, або інший клієнт
+
+[[https://blog.golang.org/concurrency-is-not-parallelism][Blog post: Concurrency is not Parallelism]]
+[[https://talks.golang.org/2012/waza.slide][Concurrency is not Parallelism]]
+[[https://talks.golang.org/2012/concurrency.slide][Go Concurrency Patterns 2012]]
+[[https://talks.golang.org/2013/advconc.slide#1][Advanced Go Concurrency Patterns 2013]]
+
+* Stdlib
+
+~140 Пакетів
+
+.image ./0428-go-in-prod/golang-stdlib-tag-cloud.png _ 900
+
+* Різноманітність бібліотек
+
+.link https://awesome-go.com
+.link https://godoc.org
+.link http://go-search.org/search go-search.org - 756881 packages
+
+* Зручні інструменти
+
+- *go*build*, which builds Go binaries using only information in the source files themselves, no separate makefiles
+- *go*test*, for unit testing and microbenchmarks
+- *go*fmt*, for formatting code
+- *go*get*, for retrieving and installing remote packages
+- *go*vet*, a static analyzer looking for potential errors in code
+- *go*run*, a shortcut for building and executing code
+- *godoc*, for displaying documentation or serving it via HTTP
+- *gorename*, for renaming variables, functions, and so on in a type-safe way
+- *go*generate*, a standard way to invoke code generators
+.caption source: [[https://github.com/golang/go/wiki/CodeTools][Code Tools]]
+.caption source: [[https://github.com/golang/go/wiki/GoGenerateTools][Generate Tools]]
+.caption source: [[https://github.com/golang/go/wiki/PackageManagementTools][Package Management Tools]]
+
+* From the theory to practice
+
+* Чи все так просто?
+
+.image ./0428-go-in-prod/panda-rainbow.jpg _ 900
+
+* Новенькі часто скаржаться на:
+
+- error handling / no exceptions
+- no generics
+- stuck in 70’s
+- no OOP
+- too opinionated
+.caption source: [[https://divan.github.io/posts/go_complain_howto/][How to complain about Go]]
+.caption more complains: [[https://github.com/ksimka/go-is-not-good][list of articles complaining that go (golang) isn't good enough]]
+
+Але з практикою це проходить :)
+
+* Ideology of Golang
+
+* Крилаті всилови Golang
+
+- A little copying is better than a little dependency.
+- Make the zero value useful.
+- The bigger the interface, the weaker the abstraction.
+- Clear is better than clever.
+- Reflection is never clear.
+- Errors are values.
+- Don't just check errors, handle them gracefully.
+- Documentation is for users.
+- Don't panic.
+.caption Simple, Poetic, Pithy: [[https://go-proverbs.github.io/][Go Proverbs]]
+
+* Сюрпризі для нових Gopher-ів
+
+- Відмінність від поведінки інших мов (вигляд схожий, результат не передбачуваний)
+
+  for i := range []byte(`Hello`) {
+     println(i)
+  }
+
+.link https://divan.github.io/posts/avoid_gotchas/ How to avoid Go gotchas
+.link https://youtu.be/B-r3Wf_I2Lk Francesc Campoy Flores - Things I learned teaching Go (dotGo 2014)
+.link http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/ 50 Shades of Go: Traps, Gotchas, and Common Mistakes for New Golang Devs
+.link https://go-traps.appspot.com/
+
+* Go is a magicless language
+
+Пам'ятаєте приклад простенького *Hellow,*world* http service?
+
+	package main
+	
+	import (
+		"fmt"
+		"log"
+		"net/http"
+	)
+	
+	func HelloServer(w http.ResponseWriter, req *http.Request) {
+		log.Println(req.URL)
+		fmt.Fprintf(w, "Hello, Gophers!\nURL = %s\n", req.URL)
+	}
+	
+	func main() {
+		fmt.Println("please connect to localhost:3000/hello")
+		http.HandleFunc("/hello", HelloServer)
+		log.Fatal(http.ListenAndServe(":3000", nil))
+	}
+
+* Production reality: What do you know about http timeouts?
+
+.image ./0428-go-in-prod/http-serv-timeouts.png _ 900
+.caption [[https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/][So you want to expose Go on the Internet]]
+
+* HTTP/2
+
+HTTP/2 is enabled automatically on any Go 1.6+ server if:
+
+- the request is served over *TLS/HTTPS*
+- *Server.TLSNextProto* is *nil* (setting it to an empty map is how you disable HTTP/2)
+- *Server.TLSConfig* is set and *ListenAndServeTLS* is used or
+- *Serve* is used and *tls.Config.NextProtos* includes "h2" (like []string{"h2", "http/1.1"}, since Serve is called too late to auto-modify the TLS Config)
+
+* Ідеологія Go - складні рішення за розробником
+
+  srv := &http.Server{
+      ReadTimeout:  5 * time.Second,
+      WriteTimeout: 10 * time.Second,
+      IdleTimeout:  120 * time.Second,
+      TLSConfig:    &tls.Config{
+        // Causes servers to use Go's default ciphersuite preferences,
+        PreferServerCipherSuites: true,//which are tuned to avoid attacks.Does nothing on clients.
+        CurvePreferences: []tls.CurveID{ // Only use curves which have assembly implementations
+            tls.CurveP256,
+            tls.X25519, // Go 1.8 only
+        },
+        MinVersion: tls.VersionTLS12,
+        CipherSuites: []uint16{
+            tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+            tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+            tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
+            tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,   // Go 1.8 only
+            tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+            ...
+        },
+      },
+    Handler:      http.HandlerFunc(HelloServer),
+  }
+
+
+* Site Reliability Engineering
+
+[[https://landing.google.com/sre/book.html][Site Reliability Engineering]]
+.caption Edited by Betsy Beyer, Chris Jones, Jennifer Petoff and Niall Richard Murphy
+
+Учасники команди SRE діляться власним досвідом з повним життєвим циклом ПО y Google, стосовно: побудови, розгортання, моніторінгу та підтримки oднієї з найбільших систем у світі.
+
+* Conclusions
+
+- Писати рішення на Go прикольно (легко, весело, ефективно, швидко помітен результат)
+- Потрібно розумітись на предметній області (не запрацює поки не зрозумієш як воно має бути)
+- Бути готовим писати код :) трохи більше ніж у мовах до яких ви звикли
+- Стаєш незалежним від мови, бо розумієшся на технологіях
+- Маючи ядро команди, 2/3 можуть бути без досвіду роботи з Golang
+
+* Resources
+
+[[https://golang.org][golang.org]]
+[[https://github.com/golang/go/wiki][Golang Wiki]]
+[[https://golang.org/doc/code.html][How to Write Go Code]]
+[[https://golang.org/doc/effective_go.html][Effective Go]]
+[[https://github.com/golang/go/wiki/CodeReviewComments][Go Code Review Comments]]
+
+* Спільнота
+
+- Maillists - [[https://groups.google.com/forum/#!forum/golang-dev][golang-dev]] та [[https://groups.google.com/forum/#!forum/golang-nuts][golang-nuts]] (high-traffic!)
+- Reddit - [[https://www.reddit.com/r/golang][https://www.reddit.com/r/golang]]
+- Twitter - [[https://twitter.com/golang_news][https://twitter.com/golang_news]]
+- Тижневик - [[http://golangweekly.com][http://golangweekly.com]]
+- Slack-спільноти - [[https://blog.gopheracademy.com/gophers-slack-community/][Gophers]] та [[http://gophers.in.ua][GolangUA]]
+- Браві хлопаки з Google та не тільки - [[https://dave.cheney.net][Dave Cheney]], [[https://twitter.com/enneff][Andrew Gerrand]],
+[[https://twitter.com/rob_pike][Rob Pike]], [[https://twitter.com/bradfitz][Brad Fitzpatrick]] та інші
+
+* Questions?
