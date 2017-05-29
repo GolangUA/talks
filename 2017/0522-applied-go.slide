@@ -1,5 +1,5 @@
 Golang at practice
-25 May 2017
+26 May 2017
 Tags: GolangUA, Go
 
 Ivan Kutuzov
@@ -49,10 +49,10 @@ Go був створений інженерами для інженерів. [[h
 * Переваги Go
 
 - Проста
-- Компільована мова програмування
+- Компільована мова програмування, процес займає меньше секунди навіть для LOC = 100k
 - Строго-типізована
 - Автоматичнe управління пам'яттю
-- Швидка
+- Concurrency build in
 - Якісна та потужна стандартна бібліотека
 - Широкий набір інструментів (go tools)
 
@@ -123,7 +123,7 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 
 * Швидка компіляція
 
-.image ./0428-go-in-prod/compile-process.jpg _ 800
+.image ./0428-go-in-prod/compile-process.jpg _ 600
 
 * Уявимо складний процес
 
@@ -248,39 +248,18 @@ _Зменьшення_шуму_призводе_до_покращення_спр
 .image ./0428-go-in-prod/http-serv-timeouts.png _ 900
 .caption [[https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/][So you want to expose Go on the Internet]]
 
-* HTTP/2
-
-HTTP/2 is enabled automatically on any Go 1.6+ server if:
-
-- the request is served over *TLS/HTTPS*
-- *Server.TLSNextProto* is *nil* (setting it to an empty map is how you disable HTTP/2)
-- *Server.TLSConfig* is set and *ListenAndServeTLS* is used or
-- *Serve* is used and *tls.Config.NextProtos* includes "h2" (like []string{"h2", "http/1.1"}, since Serve is called too late to auto-modify the TLS Config)
-
 * Ідеологія Go - складні рішення за розробником
 
   srv := &http.Server{
       ReadTimeout:  5 * time.Second,
       WriteTimeout: 10 * time.Second,
       IdleTimeout:  120 * time.Second,
-      TLSConfig:    &tls.Config{
-        // Causes servers to use Go's default ciphersuite preferences,
-        PreferServerCipherSuites: true,//which are tuned to avoid attacks.Does nothing on clients.
-        CurvePreferences: []tls.CurveID{ // Only use curves which have assembly implementations
-            tls.CurveP256,
-            tls.X25519, // Go 1.8 only
-        },
-        MinVersion: tls.VersionTLS12,
-        CipherSuites: []uint16{
-            tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-            tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-            tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
-            tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,   // Go 1.8 only
-            tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-            ...
-        },
-      },
-    Handler:      http.HandlerFunc(HelloServer),
+      Handler:      http.HandlerFunc(HelloServer),
+  }
+  ...
+  func HelloServer(w http.ResponseWriter, req *http.Request) {
+    log.Println(req.URL)
+    fmt.Fprintf(w, "Hello, Gophers!\nURL = %s\n", req.URL)
   }
 
 
@@ -293,6 +272,7 @@ HTTP/2 is enabled automatically on any Go 1.6+ server if:
 
 * Conclusions
 
+- system programming language
 - Писати рішення на Go прикольно (легко, весело, ефективно, швидко помітен результат)
 - Потрібно розумітись на предметній області (не запрацює поки не зрозумієш як воно має бути)
 - Бути готовим писати код :) трохи більше ніж у мовах до яких ви звикли
