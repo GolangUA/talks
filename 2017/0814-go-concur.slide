@@ -1,0 +1,599 @@
+Go Concurrency
+13 Aug 2017
+Tags: Go, Concurrency, principles, patterns
+
+Borys Hulii
+SE, SoftServe
+
+Thanks to
+Ivan Kutuzov
+SE, SoftServe
+@arbrix
+
+* What we will talk about
+
+- From parallel to concurrent programming
+- Go Concurrency Basic
+- Principles
+- Patterns
+- Go Concurrency model
+
+* End of Moore's Law
+
+.image ./0814-go-concur/CPU-Moores-law.png _ 700
+
+Economist, Technology Quarterl, [[http://www.economist.com/technology-quarterly/2016-03-12/after-moores-law][After Moore's law]], 12 March 2016
+
+* CPUs are not getting faster, but they are getting wider
+
+*Dave*Cheney*, [[http://dave.cheney.net/2015/08/08/performance-without-the-event-loop][Performance without the event loop]], 8 August 2015
+
+.image ./0814-go-concur/Ivy-Bridge_Die_Flat-HR.jpg
+Image credit: Intel
+
+* Processes (what we remember from history)
+
+- batch processing model.
+- development of multiprocessing, or time sharing, operating systems. 
+
+The operating systems maintain the illusion of concurrency by rapidly switching the attention of the CPU between active processes by recording the state of the current process, then restoring the state of another. This is called context switching.
+
+* Threads
+
+- have a share address space
+- lighter to schedule than processes -> faster to create and faster to switch between
+
+OS scheduler is universal but not optimal for each technology.
+OS can't make informed scheduling decisions, based on the Go model.
+
+* Communicating sequential processes
+[[https://en.wikipedia.org/wiki/Communicating_sequential_processes][Antony Hoare, 1978]]
+
+- Occam (May, 1983), 
+- Erlang (Armstrong, 1986),
+- Newsqueak (Pike, 1988), 
+- Concurrent ML (Reppy, 1993), 
+- Alef (Winterbottom, 1995), 
+- Limbo (Dorward, Pike, Winterbottom, 1996).
+- Go (Robert Griesemer, Rob Pike, Ken Thompson, 2007)
+- Crystal (Ary Borenszweig and Juan Wajnerman, 2011)
+- RaftLib (Jonathan Beard, 2014)
+
+* Golang Concurrency Basic
+
+* Goroutines and Channels
+Goroutines are independently executing functions in the same address space.
+
+	go f()
+	go g(1, 2)
+
+Channels are a typed conduit through which you can send and receive values with the channel operator, *<-*
+
+  c := make(chan int) // Like maps and slices, channels must be created before use
+  go func() {
+    c <- 3 // Send 3 to channel c.
+  }()
+  n := <-c // Receive from c, and assign value to n.
+
+Channels can be buffered. Provide the buffer length as the second argument to make to initialize a _buffered_ channel:
+
+  ch := make(chan int, 100)
+
+For more on the basics look at: *Rob*Pike*, [[http://talks.golang.org/2012/concurrency.slide#1][Go Concurrency Patterns]] 2012.
+
+* Range and Close
+
+A sender can *close* a channel to indicate that no more values will be sent. Receivers can test whether a channel has been closed by assigning a second parameter to the receive expression: afte
+
+  v, ok := <-ch
+
+*ok* is false if there are no more values to receive and the channel is *closed*
+
+The loop *for*i*:=*range*c* receives values from the channel repeatedly until it is closed
+
+* Select
+
+The *select* statement lets a goroutine wait on multiple communication operations
+
+A *select* blocks until one of its cases can run, then it executes that case. It chooses one at random if multiple are ready.
+
+  select {
+  case c <- x:
+    x, y = y, x+y
+  case <-quit:
+    fmt.Println("quit")
+    return
+  }
+
+* Default Selection
+
+The *default* case in a *select* is run if no other case is ready.
+
+Use a *default* case to try a send or receive without blocking:
+
+  select {
+  case i := <-c:
+      // use i
+  default:
+      // receiving from c would block
+  }
+
+* Dave Cheney's Four Channel Axioms
+
+- A send to a nil channel blocks forever.
+- A receive from a nil channel blocks forever.
+- A send to a closed channel panics.
+- A receive from a closed channel returns the zero value immediately.
+
+.link https://udhos.github.io/golang-concurrency-tricks Golang Concurrency Tricks
+
+* sync.Mutex
+
+But what if we don't need communication? What if we just want to make sure only one goroutine can access a variable at a time to avoid conflicts?
+
+This concept is called _mutual_exclusion_, and the conventional name for the data structure that provides it is _mutex_
+
+Go's standard library provides mutual exclusion with *sync.Mutex* and its two methods:
+
+  Lock
+  Unlock
+
+* sync.WaitGroup
+
+A *WaitGroup* waits for a collection of goroutines to finish. The main goroutine calls *Add* to set the number of goroutines to wait for. Then each of the goroutines runs and calls *Done* when finished. At the same time, *Wait* can be used to block until all goroutines have finished.
+
+  var wg sync.WaitGroup
+  var urls = []string{
+      "http://www.golang.org/",
+      "http://www.google.com/",
+      "http://www.somestupidname.com/",
+  }
+  for _, url := range urls {
+      wg.Add(1) // Increment the WaitGroup counter.
+      go func(url string) {// Launch a goroutine to fetch the URL.
+          defer wg.Done()// Decrement the counter when the goroutine completes.
+          http.Get(url)// Fetch the URL.
+      }(url)
+  }
+  wg.Wait()// Wait for all HTTP fetches to complete.
+
+
+* Semaphore
+
+  func execute() {
+  	s := make(chan struct{}, 3)
+  
+  	for i := 0; i < 4; i++ {
+  		go doStuff(s)
+  	}
+  }
+  
+  //....
+  func doStuff(s chan struct{}) {
+  	s <- struct{}{}
+  	defer func() { <-s }()
+  	//.. DO STUFF
+  }
+
+* Timeout
+
+	select {
+	case <-ch:
+		// a read from ch has occurred
+	case <-time.After(5 * time.Second): // HL
+		// the read from ch has timed out
+	}
+
+* Moving on
+
+  func findFirstResult(conns []Conn, query string) Result {
+    ch := make(chan Result)
+    searchReplica := func(i int) { c <- conns[i].Search(query) }
+    for i := range replicas {
+        go searchReplica(i)
+    }
+  	return <-ch
+  }
+
+* Generator
+
+  func sq(in <-chan int) <-chan int {
+      out := make(chan int)
+      go func() {
+          for n := range in {
+              out <- n * n
+          }
+          close(out)
+      }()
+      return out
+  }
+
+* Merge func
+
+  func merge(cs ...<-chan int) <-chan int {
+      var wg sync.WaitGroup
+      out := make(chan int)
+  
+      // Start an output goroutine for each input channel in cs.  output
+      // copies values from c to out until c is closed, then calls wg.Done.
+      output := func(c <-chan int) {
+          for n := range c {
+              out <- n
+          }
+          wg.Done()
+      }
+      wg.Add(len(cs))
+      for _, c := range cs {
+          go output(c)
+      }
+  
+      // Start a goroutine to close out once all the output goroutines are
+      // done.  This must start after the wg.Add call.
+      go func() {
+          wg.Wait()
+          close(out)
+      }()
+      return out
+  }
+
+* Golang Concurrency Principles & Patterns
+
+* Adding concurrency takes your application to the next level of complexity:
+
+- distributing expensive computation across available computational units
+- stages coordination
+- efficient resource usage: start/stop processing as soon as needed, pooling
+
+* Process composition
+
+    {generator |> heavyCalculations |> consume}
+
+* More complex example (workers)
+
+ {generator(N)} >|> {heavyCalculations} |> {consume}
+                 |> {heavyCalculations} |
+                 |> {heavyCalculations} |
+                 |> {heavyCalculations} |
+                 |> {heavyCalculations} |
+                 |> {heavyCalculations} |
+                 |> {heavyCalculations} |
+                 ...
+ 
+
+* Even more complex example: Parallel
+
+ {generator(0..N/2)} >|> {heavyCalculations} |> {consume}
+                       |> {heavyCalculations} |
+                       |> {heavyCalculations} |
+                       |> {heavyCalculations} |
+                         -------------------------------------------------
+                       |> {heavyCalculations} |
+                       |> {heavyCalculations} |
+                       |> {heavyCalculations} |
+                       ...
+  {generator(N/2..N)} >|> {heavyCalculations} |> {consume}
+                       |> {heavyCalculations} |
+                       |> {heavyCalculations} |
+                         -------------------------------------------------
+                       |> {heavyCalculations} |
+                       |> {heavyCalculations} |
+                       |> {heavyCalculations} |
+
+* Simple Generator
+
+  func boring(msg string) <-chan string { // Returns receive-only channel of strings. // HL
+  	c := make(chan string)
+  	go func() { // We launch the goroutine from inside the function. // HL
+  		for i := 0; ; i++ {
+  			c <- fmt.Sprintf("%s: %d", msg, i)
+  			time.Sleep(time.Duration(rand.Intn(2e3)) * time.Millisecond)
+  		}
+  	}()
+  	return c // Return the channel to the caller. // HL
+  }
+
+* Fan-In code
+
+A function can read from multiple inputs and proceed until all are closed by multiplexing the input channels onto a single channel that's closed when all the inputs are closed. This is called fan-in.
+
+  func fanIn(input1, input2 <-chan string) <-chan string { // HL
+  	c := make(chan string)
+  	go func() { for { c <- <-input1 }}()
+  	go func() { for { c <- <-input2 }}()
+  	return c
+  }
+  func main() {
+  	c := fanIn(boring("Joe"), boring("Ann")) // HL
+  	for i := 0; i < 10; i++ {
+  		fmt.Println(<-c) // HL
+  	}
+  	fmt.Println("You're both boring; I'm leaving.")
+  }
+
+* Fan-In image
+
+.image ./0814-go-concur/gophermegaphones.jpg _ 800
+
+* Fan-In
+
+.image ./0814-go-concur/divan-fanin.gif 500 500
+
+* Workers or Fan-Out
+
+Multiple functions can read from the same channel until that channel is closed; this is called fan-out. This provides a way to distribute work amongst a group of workers to parallelize CPU use and I/O.
+
+
+  const (
+  	WORKERS    = 5
+  	SUBWORKERS = 3
+  	TASKS      = 20
+  	SUBTASKS   = 10
+  )
+  
+  func main() {
+  	var wg sync.WaitGroup
+  	wg.Add(WORKERS)
+  	tasks := make(chan int)
+  	for i := 0; i < WORKERS; i++ {
+  		go worker(tasks, &wg)
+  	}
+  	for i := 0; i < TASKS; i++ {
+  		tasks <- i
+  	}
+  	close(tasks)
+  	wg.Wait()
+  }
+
+* Workers or Fan-Out
+
+  func worker(tasks <-chan int, wg *sync.WaitGroup) {
+  	defer wg.Done()
+  	for {
+  		task, ok := <-tasks
+  		if !ok {
+  			return
+  		}
+  
+  		subtasks := make(chan int)
+  		for i := 0; i < SUBWORKERS; i++ {
+  			go subworker(subtasks)
+  		}
+  		for i := 0; i < SUBTASKS; i++ {
+  			task1 := task * i
+  			subtasks <- task1
+  		}
+  		close(subtasks)
+  	}
+  }
+
+* Workers or Fan-Out
+
+  func subworker(subtasks chan int) {
+  	for {
+  		task, ok := <-subtasks
+  		if !ok {
+  			return
+  		}
+  		time.Sleep(time.Duration(task) * time.Millisecond)
+  		fmt.Println(task)
+  	}
+  }
+
+* Workers or Fan-Out
+
+.image ./0814-go-concur/divan-workers2.gif 500 500
+
+* Server Code
+
+  import "net"
+  
+  func handler(c net.Conn) {
+  	c.Write([]byte("ok"))
+  	c.Close()
+  }
+  
+  func main() {
+  	l, err := net.Listen("tcp", ":5000")
+  	if err != nil {
+  		panic(err)
+  	}
+  	for {
+  		c, err := l.Accept()
+  		if err != nil {
+  			continue
+  		}
+  		go handler(c)
+  	}
+  }
+
+* Server
+
+.image ./0814-go-concur/divan-servers.gif 500 500
+
+* Server + Worker
+
+.image ./0814-go-concur/divan-servers3.gif 500 500
+
+* Context
+
+  // A Context carries a deadline, cancelation signal, and request-scoped values
+  // across API boundaries. Its methods are safe for simultaneous use by multiple
+  // goroutines.
+  type Context interface {
+  	// Done returns a channel that is closed when this Context is canceled
+  	// or times out.
+  	Done() <-chan struct{} // HL
+  
+  	// Err indicates why this context was canceled, after the Done channel
+  	// is closed.
+  	Err() error // HL
+  
+  	// Deadline returns the time when this Context will be canceled, if any.
+  	Deadline() (deadline time.Time, ok bool) // HL
+  
+  	// Value returns the value associated with key or nil if none.
+  	Value(key interface{}) interface{} // HL
+  }
+
+* Demo Context for graceful shutdown
+
+* Resource
+	func NewResource(ctx context.Context, wg *sync.WaitGroup) <-chan int {
+		out := make(chan int)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				select {
+				case <-ctx.Done():
+					fmt.Println("Resource received ctx.Done signal")
+					return
+				case out <- rand.Intn(200):
+				}
+			}
+		}()
+		return out
+	}
+
+* SubWorker
+
+	func SubWorker(ctx context.Context, wg *sync.WaitGroup, index int) {
+		defer func() {
+			fmt.Printf("SubWorker %d was stoped\n", index)
+			wg.Done()
+		}()
+		fmt.Printf("SubWorker #%d was started\n", index)
+	
+		for {
+			select {
+			case <-ctx.Done():
+				sleepTime := rand.Intn(200)
+				fmt.Printf("SubWorker #%d Received ctx.Done signal. Stoping in %d Milliseconds\n", index, sleepTime)
+				time.Sleep(time.Millisecond * time.Duration(sleepTime))
+				return
+			case <-time.After(time.Second):
+				random := <-GlobalResource
+				fmt.Printf("Tick from SubWorker #%d with value %d\n", index, random)
+			}
+		}
+	}	
+
+* Worker
+
+	func Worker(ctx context.Context, wg *sync.WaitGroup) {
+		defer func() {
+			fmt.Println("Worker was stoped")
+			wg.Done()
+		}()
+		fmt.Println("Worker was started")
+	
+		childWG := &sync.WaitGroup{}
+	
+		for i := 0; i < 3; i++ {
+			childWG.Add(1)
+			go SubWorker(ctx, childWG, i)
+		}
+	
+		// Will wait until main would not call cancel()
+		<-ctx.Done()
+		fmt.Println("Worker receiver ctx.Done signal. Waiting for SubWorkers")
+		childWG.Wait()
+	}
+
+* Lets run it!
+
+.play ./0814-go-concur/contextDemo.go /^var GlobalResource/,/^}/
+
+* Data Races
+
+Data races are among the most common and hardest to debug types of bugs in concurrent systems. A data race occurs when two goroutines access the same variable concurrently and at least one of the accesses is a write. See the [[https://golang.org/ref/mem/][The Go Memory Model]] for details.
+
+  func main() {
+  	c := make(chan bool)
+  	m := make(map[string]string)
+  	go func() {
+  		m["1"] = "a" // First conflicting access.
+  		c <- true
+  	}()
+  	m["2"] = "b" // Second conflicting access.
+  	<-c
+  	for k, v := range m {
+  		fmt.Println(k, v)
+  	}
+  }
+
+* Data race detector
+
+To help diagnose such bugs, Go includes a built-in data race detector. To use it, add the -race flag to the go command:
+
+  $ go test -race mypkg    // to test the package
+  $ go run -race mysrc.go  // to run the source file
+  $ go build -race mycmd   // to build the command
+  $ go install -race mypkg // to install the package
+
+* Typical Data Races
+
+.link https://golang.org/doc/articles/race_detector.html#Race_on_loop_counter Race_on_loop_counter
+.link https://golang.org/doc/articles/race_detector.html#Accidentally_shared_variable Accidentally_shared_variable 
+.link https://golang.org/doc/articles/race_detector.html#Unprotected_global_variable Unprotected_global_variable
+.link https://golang.org/doc/articles/race_detector.html#Primitive_unprotected_variable Primitive_unprotected_variable
+
+* Conclusions
+
+- Distributing work onto available computational units can lead to increased performance
+- There are many ways to distribute the work across the units through various process-compositions
+- Performance depends on the size of the data set and the composition
+- Experiment, measure and pick the best one
+- Go provides powerful means to create simple and complex compositions
+
+* Golang Concurrency Mechanics
+
+* Go Scheduler
+*Daniel*Morsing*, [[http://morsmachine.dk/go-scheduler][Go Scheduler]]
+
+3 usual models for threading
+- N:1 - several userspace threads (UT) are run on one OS thread (OST)
+- 1:1 - one UT of execution matches one OST
+- M:N - (Go use it): It schedules an arbitrary number of goroutines onto an arbitrary number of OST
+
+* Goroutines visualization
+
+.image ./0814-go-concur/Goroutines-workflow.png 500 900
+
+* Goroutines blocking cases
+
+- Channel send and receive operations if those operations would block.
+- The go statement, although there is no guarantee that new goroutine will be scheduled immediately.
+- Blocking syscalls like file and network operations.
+- After being stopped for a garbage collection cycle.
+
+In Go, all I/O is blocking. The Go ecosystem is built around the idea that you write against a blocking interface and then handle concurrency through goroutines and channels rather than callbacks and futures.
+
+* Goroutines, stack management, and an integrated network poller
+
+- In conclusion, goroutines provide a powerful abstraction that frees the programmer from worrying about thread pools or event loops.
+- The stack of a goroutine is as big as it needs to be without being concerned about sizing thread stacks or thread pools.
+- The integrated network poller lets Go programmers avoid convoluted callback styles while still leveraging the most efficient IO completion logic available from the operating system.
+- The runtime makes sure that there will be just enough threads to service all your goroutines and keep your cores active.
+
+* References
+
+[[http://golang.org/doc/effective_go.html][Effective Go]]
+[[https://blog.golang.org/share-memory-by-communicating][Share Memory By Communicating]]: Andrew Gerrand
+[[https://blog.golang.org/go-concurrency-patterns-timing-out-and][Go Concurrency Patterns: Timing out, moving on]]: Andrew Gerrand
+[[https://blog.golang.org/concurrency-is-not-parallelism][Concurrency is not parallelism]]: Rob Pike
+[[https://talks.golang.org/2012/concurrency.slide][Go Concurrency Patterns]]: Rob Pike
+[[https://blog.golang.org/pipelines][Go Concurrency Patterns: Pipelines and cancellation]]: Sameer Ajmani
+[[https://blog.golang.org/advanced-go-concurrency-patterns][Advanced Go Concurrency Patterns]]: Sameer Ajmani
+[[https://blog.golang.org/context][Go Concurrency Patterns: Context]]: Sameer Ajmani
+[[https://blog.golang.org/race-detector][Introducing the Go Race Detector]]: Dmitry Vyukov and Andrew Gerrand
+[[http://dave.cheney.net/2015/08/08/performance-without-the-event-loop][Performance without the event loop]]: Dave Cheney
+[[https://divan.github.io/posts/go_concurrency_visualize][Visualizing Concurrency in Go]]: Ivan Danyliuk
+[[http://morsmachine.dk/go-scheduler][Go Scheduler]]: Daniel Morsing
+[[http://www.gmarik.info/blog/2016/experimenting-with-golang-pipelines/][Experimenting with Go pipelines]]: @Gmarik
+[[https://github.com/golang/go/wiki/LearnConcurrency][LearnConcurrency]]: Golang Wiki
+
+* So now you better understand the words
+
+_Parallelism_is_simply_running_things_in_parallel._
+_Concurrency_is_a_way_to_structure_your_program._
