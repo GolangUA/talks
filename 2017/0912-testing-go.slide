@@ -1,0 +1,209 @@
+Testing Go
+12 Sep 2017
+Tags: Go, Testing, principles, patterns
+
+Borys Hulii
+SE, SoftServe
+
+* What we will talk about
+
+- Why you should test your code
+- Go testing tool and testing package
+- Practices
+- Q&A
+
+* Why you should test your code
+
+- You will be sure that some piece of your code is works properly
+- Tests will speed up your development process
+- You would become more familiar with Go in general
+
+.image ./0912-testing-go/gopherhelmet.jpg 300 _
+
+* Go testing tool and testing package
+
+* Go testing tool
+
+This commands will fit you in 90% of cases from real life
+
+  $ go test ./...                   # To run all tests in project 
+
+  $ go test -cover                  # To run tests with coverage 
+
+  $ go test -v -run Error ./folder/ # To run all tests from "folder" with "Error" in name
+
+  $ go test -bench                  # To run benchmarks
+
+More information could be found here:
+
+.link https://golang.org/cmd/go/#hdr-Description_of_testing_flags Description of testing flags
+.link https://blog.golang.org/cover How to mesure coverage
+.link https://golang.org/pkg/testing/ Testing package
+
+* Coverage
+
+  $ go test -coverprofile=coverage.out
+  ...
+  $ go tool cover -html=coverage.out
+
+.image ./0912-testing-go/coverage.png 400 650
+
+* GoConvey utility
+
+.image ./0912-testing-go/goconvey.png 500 950
+
+.link https://github.com/smartystreets/goconvey
+
+* Naming convention
+
+  // Tests 
+  func TestMain(m *testing.M) {
+    // do some testing stuff...
+  }
+
+  // Examples for GoDoc. Examples are executes as a simple tests, but Output will be also checked
+  func ExampleHello() {
+    fmt.Println("hello")
+    // Output: hello
+  }
+
+  // Benchmarks. Will be executed only if -bench flag specified
+  func BenchmarkHello(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        fmt.Sprintf("hello")
+    }
+  }
+
+* Practices
+
+* Two parts of testing
+
+.caption Test methodolody
+
+- Libraries
+- Common practices
+- Code style
+- etc.
+
+.caption Writing testable code
+
+- Code "mockability"
+- Code cohesion
+- Common practices (global variables, interfaces, configurability)
+
+* Table driven tests
+
+.code ./0912-testing-go/tableTestingBasic_test.go /^func TestAdd_Basic/,/^}/
+
+  $ go test -run Basic -v
+  === RUN   TestAdd_Basic
+  --- PASS: TestAdd_Basic (0.00s)
+  PASS
+  ok  	github.com/GolangUA/talks/2017/0912-testing-go	0.001s
+
+* Using subtests
+
+.code ./0912-testing-go/tableTestingSubTests_test.go /^func TestAdd_Sub/,/^}/
+
+* Run
+
+  $ go test -run Sub -v
+  === RUN   TestAdd_Sub
+  === RUN   TestAdd_Sub/Positive_values
+  === RUN   TestAdd_Sub/Positive_with_negative
+  === RUN   TestAdd_Sub/Positive_with_zero
+  === RUN   TestAdd_Sub/Zeros
+  --- FAIL: TestAdd_Sub (0.00s)
+      --- PASS: TestAdd_Sub/Positive_values (0.00s)
+      --- FAIL: TestAdd_Sub/Zeros (0.00s)
+        tableTestingSubTests_test.go:21: 0 + 0 = 0, expected 1
+      --- PASS: TestAdd_Sub/Positive_with_zero (0.00s)
+      --- PASS: TestAdd_Sub/Positive_with_negative (0.00s)
+  FAIL
+  exit status 1
+  FAIL	github.com/GolangUA/talks/2017/0912-testing-go	0.001s
+
+* Flags in tests
+
+.code ./0912-testing-go/flags_test.go
+
+  $ go test -run Integration -v -integration
+  === RUN   TestAdd_OnlyForIntegration
+  --- PASS: TestAdd_OnlyForIntegration (0.00s)
+  PASS
+  ok  	github.com/GolangUA/talks/2017/0912-testing-go	0.001s
+
+* Helpers (only from Go 1.9)
+
+.code ./0912-testing-go/helper_test.go /^func testTempFile/,/^}/
+
+* Mock vs Real implementation
+
+Real implementation better then mocking.
+Mocked Conn will work as you expect, but it not even close to real life
+
+.code ./0912-testing-go/networking.go /^func newConn/,/^}/
+
+* Testable code
+
+To write really testable code you should always think about testing during develepment
+
+- Try to create as much as possible independent code. It should not dependent, but configurable
+- Do not take the whole if only a part is needed
+- Do not overuse interfaces and global state it will generate extra complexity
+- Use interfaces if it is useful for application or if it will be the best approach for testing
+
+.image ./0912-testing-go/gopherOfLiberty.png 250 220
+
+* Global state
+
+  // Not good on its own
+  const port = 1000
+
+  // Better
+  var port = 1000
+
+  // Best
+  const defaultPort = 1000
+  type ServerOpts {
+    Port int // default it to defaultPort somewhere
+  }
+
+* Do not take the whole if only a part is needed
+
+.code ./0912-testing-go/interfaceReduce.go
+
+* Some tricks that we use in everyday testing
+
+* Swapping
+
+Sometimes you have to write tests for functions that calls functions that could not be loaded during unit tests
+.code ./0912-testing-go/swapping.go /START OMIT/,/END OMIT/
+
+* Covering with inteface
+
+Sometimes external libraries returns structs instead of interfaces and you are not able to mock methods
+.code ./0912-testing-go/coveringWithInterface.go
+
+* Conclusion
+
+- Do not afraid to repeat yourself in tests. Tests become more readable
+- Blackbox testing is bad practice, but in some cases it is reasonable
+- A lot of small packages will turn your testing to hell. But usage of small internal packages will allow you to create less linked code
+- Avoid global states where it is possible
+- Real implementation always better than mock
+
+.image ./0912-testing-go/GOPHER_MIC_DROP.png 250 220
+
+* Q&A
+
+* Links
+
+A lot of examples and ideas were taken from this presentation
+.link https://www.youtube.com/watch?v=8hQG7QlcLBk GopherCon 2017: Mitchell Hashimoto - Advanced Testing with Go
+
+Links to libraries and documentation
+.link https://golang.org/cmd/go/#hdr-Description_of_testing_flags Description of testing flags
+.link https://blog.golang.org/cover How to mesure coverage
+.link https://golang.org/pkg/testing/ Testing package
+.link https://github.com/smartystreets/goconvey GoConvey
