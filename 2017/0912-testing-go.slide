@@ -196,3 +196,14 @@ Sometimes external libraries returns structs instead of interfaces and you are n
 .image ./0912-testing-go/GOPHER_MIC_DROP.png 250 220
 
 * Q&A
+
+* Links
+
+A lot of examples and ideas were taken from this presentation
+.link https://www.youtube.com/watch?v=8hQG7QlcLBk GopherCon 2017: Mitchell Hashimoto - Advanced Testing with Go
+
+Links to libraries and documentation
+.link https://golang.org/cmd/go/#hdr-Description_of_testing_flags Description of testing flags
+.link https://blog.golang.org/cover How to mesure coverage
+.link https://golang.org/pkg/testing/ Testing package
+.link https://github.com/smartystreets/goconvey GoConvey
