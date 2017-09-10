@@ -18,6 +18,8 @@ SE, SoftServe
 - Tests will speed up your development process
 - You would become more familiar with Go in general
 
+.image ./0912-testing-go/gopherhelmet.jpg 300 _
+
 * Go testing tool and testing package
 
 * Go testing tool
@@ -190,5 +192,7 @@ Sometimes external libraries returns structs instead of interfaces and you are n
 - A lot of small packages will turn your testing to hell. But usage of small internal packages will allow you to create less linked code
 - Avoid global states where it is possible
 - Real implementation always better than mock
+
+.image ./0912-testing-go/GOPHER_MIC_DROP.png 250 220
 
 * Q&A
