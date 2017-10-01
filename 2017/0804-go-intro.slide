@@ -1,0 +1,215 @@
+How to learn Golang in a simple and short way
+1 Oct 2017
+Tags: GolangUA, learning Go, simple way
+
+Ivan Kutuzov
+SE, SoftServe
+ikut@softserveinc.com
+https://golang.org.ua
+@arbrix
+
+* Do you believe in magic?
+
+.image ./0804-go-intro/not-sure-if-programming-is-easy.jpeg 550 _
+
+* Simple != Easy
+
+* Simplicity is complicated
+
+.link https://youtu.be/rFejpH_tAHM Rob Pike, dotGo 2015
+
+* Language is learned by practice
+
+* Programming Languages - initial barrier
+
+.image ./0804-go-intro/lang-initial-barier.jpg _ 1000
+
+* Define the basics
+
+* Workspace
+
+* Workspace
+
+  $GOPATH
+  $GOROOT
+  
+  $GOPATH/bin
+  $GOPATH/pkg
+  $GOPATH/src
+
+* TODO: Hello world application
+
+* Language Mechanics of Variables
+
+.image ./0804-go-intro/basic_types.png _ 1000
+.caption Source: [[https://divan.github.io/posts/avoid_gotchas/][Ivan Daniluk: How to avoid Go gotchas]]
+
+* Language Mechanics of Frame
+
+.image ./0804-go-intro/func_frame.png _ 1000
+
+* Language Mechanics of Pointers
+
+.image ./0804-go-intro/pointers.png _ 1000
+
+* Language Mechanics of Frame
+
+.image ./0804-go-intro/func_params.png _ 1000
+
+* Language Mechanics On Stacks And Pointers
+
+* frame
+
+.image ./0804-go-intro/inc-frame-80_figure4.png _ 500
+.caption [[https://www.goinggo.net/2017/05/language-mechanics-on-stacks-and-pointers.html][William Kennedy: Language Mechanics On Stacks And Pointers]]
+
+* pointer
+
+.image ./0804-go-intro/inc-frame-pointer-80_figure6.png 600 _
+
+* heap
+
+.image ./0804-go-intro/val-on-heap-81_figure3.png 600 _
+
+* TODO: frame exercise
+
+* Reading a value
+
+  v, ok := m[vKey] // get value from map
+  v, ok := <-ch        // get value from channel
+  v, ok := iface.(*User)  // type Assertion
+
+* Empty Struct
+
+  var s struct{}
+  fmt.Println(unsafe.Sizeof(s)) // prints 0
+  done := make(chan struct{})
+  done <- struct{}{}
+
+* Empty Struct
+
+  var x [1000000000]struct{}
+  // How many memory will be allocated for it?
+
+* Empty Struct
+
+  fmt.Println(unsafe.Sizeof(x)) // prints 0
+  
+  var x = make([]struct{}, 100)
+  var y = x[:50]
+  fmt.Println(len(y), cap(y)) // prints 50 100
+
+* Time parsing
+
+.image ./0804-go-intro/time-parse.png _ 1000
+
+* Time parse
+
+.image ./0804-go-intro/time-format.png _ 1000
+
+* Time parse
+
+.image ./0804-go-intro/time-format.png _ 1000
+.image ./0804-go-intro/time-format2.png _ 1000
+
+* Error handling
+
+* Error handling
+
+- Check them
+- Add context
+- Handle them gracefully
+- Don’t panic
+
+* TODO: errors exercise
+
+* OOP
+
+*Object-oriented*programming*(OOP)* is a *programming*paradigm* based on the concept of *"objects"*, which may contain data, in the form of fields, often known as *attributes*; and code, in the form of procedures, often known as *methods*.
+
+In OOP, computer programs are designed by making them out of objects that interact with one another.
+There is *significant*diversity* of OOP languages, but the most popular ones are class-based, meaning that objects are instances of classes, which typically also determine their type.
+
+
+.link https://www.youtube.com/watch?v=rKnDgT73v8s The Go Programming language (Nov 10, 2009)
+.link https://www.youtube.com/watch?v=5kj5ApnhPAE OSCON 2010: Rob Pike, "Public Static Void"
+
+* OOP
+
+.image ./0804-go-intro/oo-character.jpeg _ 900
+
+* OOP
+
+- Bottom–up approach in program design
+- Programs organized around objects, grouped in classes
+- Focus on data with methods to operate upon object’s data
+- Interaction between objects through functions
+- Reusability of design through creation of new classes by adding features to existing classes
+
+.caption [[https://www.tutorialspoint.com/object_oriented_analysis_design/ooad_object_oriented_paradigm.htm][TutorialsPoint: Object Oriented Paradigmh]]
+
+* Semantic Guidelines
+
+- At the time you declare a type you must decide what semantic is being used.
+- Functions and methods must respect the semantic choice for the given type.
+- Avoid having method receivers that use different semantics than those corresponding to a given type.
+- Avoid having functions that accept/return data using different semantics than those corresponding to the given type.
+- Avoid changing the semantic for a given type.
+
+.caption [[https://www.goinggo.net/2017/06/design-philosophy-on-data-and-semantics.html][William Kennedy: Design Philosophy On Data And Semantics]]
+
+
+* Interface
+
+* Interface Semantics
+
+.link https://www.goinggo.net/2017/07/interface-semantics.html William Kennedy: Interface Semantics
+
+* Use an interface when:
+
+- users of the API need to provide an implementation detail.
+- API’s have multiple implementations they need to maintain internally.
+- parts of the API that can change have been identified and require decoupling.
+
+.link https://www.goinggo.net/2016/10/avoid-interface-pollution.html William Kennedy: Avoid Interface Pollution
+
+* Don’t use an interface:
+
+- for the sake of using an interface.
+- to generalize an algorithm.
+- when users can declare their own interfaces.
+
+.link https://www.goinggo.net/2016/10/avoid-interface-pollution.html William Kennedy: Avoid Interface Pollution
+
+* Concurrency
+
+Concurrency is the composition of independently executing computations.
+
+Concurrency is a way to structure software, particularly as a way to write clean code that interacts well with the real world.
+
+.link https://youtu.be/cN_DpYBzKso Rob Pike - Concurrency Is Not Parallelism (video)
+
+.link https://talks.golang.org/2012/waza.slide Rob Pike: Concurrency Is Not Parallelism (slides)
+
+.link https://talks.golang.org/2012/concurrency.slide Rob Pike: Go Concurrency Patterns (slides)
+
+* Concurrency
+
+- Based on Goroutines
+- Synchronize Goroutines
+- Channels for communication
+
+* Operations with a channel that block
+
+- A send to a nil channel blocks forever
+- A receive from a nil channel blocks forever
+- A send to a closed channel panics
+- A receive from a closed channel returns the zero value immediately
+
+* TODO: concurrency exercise
+
+* Simplicity → Readability → Maintainability
+
+.image ./0804-go-intro/poor-design-leads-to-spaghetti-code.jpeg _ 800
+
+* Work for Simplicity
