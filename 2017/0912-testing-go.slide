@@ -4,6 +4,7 @@ Tags: Go, Testing, principles, patterns
 
 Borys Hulii
 SE, SoftServe
+@BorysHulii
 
 * What we will talk about
 
@@ -57,7 +58,7 @@ More information could be found here:
 * Naming convention
 
   // Tests 
-  func TestMain(m *testing.M) {
+  func TestMain(t *testing.T) {
     // do some testing stuff...
   }
 
@@ -123,6 +124,12 @@ More information could be found here:
   exit status 1
   FAIL	github.com/GolangUA/talks/2017/0912-testing-go	0.001s
 
+* Generate table tests
+
+.link https://github.com/cweill/gotests
+
+.image ./0912-testing-go/gotests.gif 500 _
+
 * Flags in tests
 
 .code ./0912-testing-go/flags_test.go
@@ -137,6 +144,16 @@ More information could be found here:
 
 .code ./0912-testing-go/helper_test.go /^func testTempFile/,/^}/
 
+* Write tests at the right level
+
+You can directly call handlers:
+
+  srv.handleRequest(w, req)
+
+Or test whole stack (routing, middleware, auth, etc.)
+
+  srv.ServeHTTP(w, req)
+
 * Mock vs Real implementation
 
 Real implementation better then mocking.
@@ -148,7 +165,7 @@ Mocked Conn will work as you expect, but it not even close to real life
 
 To write really testable code you should always think about testing during develepment
 
-- Try to create as much as possible independent code. It should not dependent, but configurable
+- Try to create as much as possible independent code. It should not be dependent, but configurable
 - Do not take the whole if only a part is needed
 - Do not overuse interfaces and global state it will generate extra complexity
 - Use interfaces if it is useful for application or if it will be the best approach for testing
@@ -175,7 +192,12 @@ To write really testable code you should always think about testing during devel
 
 * Some tricks that we use in everyday testing
 
-* Swapping
+* Dependency injection
+
+To keep code clean and have a good configurability you can use this approach
+.code ./0912-testing-go/depInj.go /START OMIT/,/END OMIT/
+
+* Monkey patching
 
 Sometimes you have to write tests for functions that calls functions that could not be loaded during unit tests
 .code ./0912-testing-go/swapping.go /START OMIT/,/END OMIT/
@@ -188,10 +210,11 @@ Sometimes external libraries returns structs instead of interfaces and you are n
 * Conclusion
 
 - Do not afraid to repeat yourself in tests. Tests become more readable
-- Blackbox testing is bad practice, but in some cases it is reasonable
 - A lot of small packages will turn your testing to hell. But usage of small internal packages will allow you to create less linked code
 - Avoid global states where it is possible
 - Real implementation always better than mock
+- Bad tests are worse than no tests. Don't test things you didn't write
+- Test code belongs to the whole team
 
 .image ./0912-testing-go/GOPHER_MIC_DROP.png 250 220
 
