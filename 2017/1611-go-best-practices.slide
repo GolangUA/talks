@@ -1,0 +1,617 @@
+How to use Go «in a go way»
+16 Nov 2017
+Tags: Go, Best Practices, Go Way, Idiomatic Go
+
+Ivan Kutuzov
+TL, SoftServe
+https://golang.org.ua
+@arbrix
+@ivan.kutuzov
+ikut@softserveinc.com
+
+* Some reasons why Golang so widely used
+
+- simple
+- readble
+- maintainable
+
+.image http://golang.org/doc/gopher/gopherbw.png _ 300
+
+* Best Practices
+
+A best practice is a method or technique that has consistently 
+shown results superior to those achieved with other means
+
+.caption [[https://en.wikipedia.org/wiki/Best_practice][Wikipadia]]
+
+*Idiomatic* _[adjective]_: using, containing, or denoting expressions 
+that are natural to a native speaker
+
+It’s possible to be a native speaker in Go
+
+.caption [[http://go-talks.appspot.com/github.com/matryer/present/idiomatic-go-tricks/main.slide][Idiomatic Go Tricks by Mat Ryer]]
+
+* Motivation
+
+Go allows us to reach our goals in an efficient way. 
+
+But when we work in a team, especially in a complex structure with many independent teams, using common practices becomes critical for business (build solutions with a high quality in short terms).
+
+Several years ago I was unable to provide a satisfying answer to this question. Now I can, let's check that.
+
+* By materials
+
+.link https://talks.golang.org/2013/bestpractices.slide Best Practices by Francesc Campoy Flores
+.link http://go-talks.appspot.com/github.com/matryer/present/idiomatic-go-tricks/main.slide Idiomatic Go Tricks by Mat Ryer
+.link https://go-proverbs.github.io/ Go Proverbs
+
+* Code practices
+
+* Line of sight
+
+- definition: "a straight line along which an observer has unobstructed vision"
+- Happy path is aligned to the left
+- Quickly scan a function to see expected flow
+- Error handling and edge cases indented
+
+.image https://cdn-images-1.medium.com/max/1600/1*nXXRSHi_1kmgorkcDHyc1Q.png
+.caption Line of sight in code: Left edge is happy path, indented is error handling and edge cases
+* Go code
+
+  func BrilliantFunction() (*Thing, error) {
+    something, err := GetSomething()
+    if err != nil {
+        return nil, err
+    }
+    defer something.Close()
+    if !something.OK() {
+        return nil, errors.New("something went wrong")
+    }
+    another, err := something.Else()
+    if err != nil {
+        return nil, &customErr{err: err, location: "BrilliantFunction"}
+    }
+    another.Lock()
+    defer another.Unlock()
+    err = another.Update(1)
+    if err != nil {
+        return nil, err
+    }
+    return another.Thing(), nil
+  }
+
+This is what most Go code ends up looking like.
+
+* Bad line of sight
+
+  func UnbrilliantFunction() (*Thing, error) {
+      something, err := GetSomething()
+      if err != nil {
+          return nil, err
+      }
+      defer something.Close()
+      if something.OK() {
+          another, err := something.Else()
+          if err != nil {
+              return nil, &customErr{err: err, location: "BrilliantFunction"}
+          }
+          another.Lock()
+          err = another.Update(1)
+          if err == nil {
+              another.Unlock()
+              return another.Thing(), nil
+          }
+          another.Unlock()
+          return nil, err
+      } else {
+          return nil, errors.New("something went wrong")
+      }
+  }
+
+* Line of sight tips
+
+- Make happy return that last statement if possible
+- Next time you write else, consider flipping the logic:
+
+  if something.OK() {
+      // do stuff
+      return true, nil
+  } else {
+      return false, errors.New("something")
+  }
+
+becomes:
+
+  if !something.OK() {
+      return false, errors.New("something")
+  }
+  // do stuff
+  return true, nil
+
+See also "cyclomatic complexity" - the pursuit of simplicity
+
+* Avoid nesting by handling errors first
+
+Less nesting means less cognitive load on the reader
+
+.caption The same advice from Francesc Campoy Flores
+
+* Single method interfaces
+
+  type Reader interface {
+      Read(p []byte) (n int, err error)
+  }
+
+- Interface consisting of only one method
+- Simpler = more powerful and useful
+- Easy to implement
+- Used throughout the standard library
+
+  type Handler interface {
+      ServeHTTP(ResponseWriter, *Request)
+  }
+
+- Only need to implement one method on a struct to build a handler
+
+.link https://www.youtube.com/watch?v=PAAkCSZUG1c&t=5m17s The bigger the interface, the weaker the abstraction (by Go Proverbs)
+
+* Function type alternatives for single method interfaces
+
+http.Handler has a counterpart called http.HandlerFunc
+
+  1910    // The HandlerFunc type is an adapter to allow the use of
+  1911    // ordinary functions as HTTP handlers. If f is a function
+  1912    // with the appropriate signature, HandlerFunc(f) is a
+  1913    // Handler that calls f.
+  1914    type HandlerFunc func(ResponseWriter, *Request)
+  1915    
+  1916    // ServeHTTP calls f(w, r).
+  1917    func (f HandlerFunc) ServeHTTP(w ResponseWriter, r *Request) {
+  1918        f(w, r)
+  1919    }
+
+- func type with matching signature
+- Method on that func implementing the interface
+- Method just calls the func
+- Now you don't even need a struct, you can just use a function
+- You can use this pattern
+
+* Discover interfaces
+
+  // Sizer describes the Size() method that gets the
+  // total size of an item.
+  type Sizer interface {
+      Size() int64
+  }
+  
+  func Fits(capacity int64, v Sizer) bool {
+      return capacity > v.Size()
+  }
+  
+  func IsEmailable(v Sizer) bool {
+      return 1<<20 > v.Size()
+  }
+  
+  // Size gets the size of a File.
+  func (f *File) Size() int64 {
+      return f.info.Size()
+  }
+
+* Many items as one
+
+Add a new type which is a slice of the interface
+
+  type Sizers []Sizer
+  
+  func (s Sizers) Size() int64 {
+      var total int64
+      for _, sizer := range s {
+          total += sizer.Size()
+      }
+      return total
+  }
+
+- The slice type implements the Sizer interface
+- Now a set of objects can be used in Fits and IsEmailable functions
+
+* Other ways to implement the interface 
+
+  type SizeFunc func() int64
+  
+  func (s SizeFunc) Size() int64 {
+      return s()
+  }
+  
+  type Size int64
+  
+  func (s Size) Size() int64 {
+      return int64(s)
+  }
+
+- SizeFunc means we can write ad-hoc size calculators and still make use of the same methods
+- Size int64 type means we can specify explicit sizes: Size(123)
+- Easy because the interface is so small
+
+* Avoid using interface values
+
+Type Assertion is error-prone and harder to read
+
+Leads to many switch-type blocks and additional error handling
+
+Marshalling works slower
+
+
+* Simple mocks
+
+ type MailSender interface {
+     Send(to, subject, body string) error
+     SendFrom(from, to, subject, body string) error
+ }
+ 
+ type MockSender struct {
+     SendFunc     func(to, subject, body string) error
+     SendFromFunc func(from, to, subject, body string) error
+ }
+ 
+ func (m MockSender) Send(to, subject, body string) error {
+     return m.SendFunc(to, subject, body)
+ }
+ func (m MockSender) SendFrom(from, to, subject, body string) error {
+     return m.SendFromFunc(from, to, subject, body)
+ }
+
+Implement the interface but pass execution directly to the function fields
+
+* Using simple mocks
+
+  func TestWelcomeEmail(t *testing.T) {
+      errTest := errors.New("nope")
+      var msg string
+  
+      sender := MockSender{
+          SendFunc: func(to, subject, body string) error {
+              msg = fmt.Sprintf("(%s) %s: %s", to, subject, body)
+              return nil
+          },
+          SendFromFunc: func(from, to, subject, body string) error {
+              return errTest
+          },
+      }
+  
+      SendWelcomeEmail(sender, "to", "subject", "body")
+  
+      if msg != "(to) subject: body" {
+          t.Error("SendWelcomeEmail:", msg)
+      }
+  }
+
+* Mocking other people's structs
+
+Sometimes somebody else provides the struct (and not an interface)
+
+  package them
+  
+  type Messenger struct {}
+  func (m *Messenger) Send(to, message string) error {
+      // ... their code
+  }
+
+We want to mock this in test code but there's no interface
+
+Make your own
+
+  type Messenger interface {
+      Send(to, message string) error
+  }
+
+- This interface is already implemented by them.Messenger struct
+- We are free to mock it in test code or even provide our own implementations
+
+* Return teardown functions
+
+  func setup(t *testing.T) (*os.File, func(), error) {
+      teardown := func() {}
+      // make a test file
+      f, err := ioutil.TempFile(os.TempDir(), "test")
+      if err != nil {
+          return nil, teardown, err
+      }
+      teardown = func() {
+          // close f
+          err := f.Close()
+          if err != nil {
+              t.Error("setup: Close:", err)
+          }
+          // delete the test file
+          err = os.RemoveAll(f.Name())
+          if err != nil {
+              t.Error("setup: RemoveAll:", err)
+          }
+      }
+      return f, teardown, nil
+  }
+
+* Return teardown functions
+
+  func TestSomething(t *testing.T) {
+      f, teardown, err := setup(t)
+      defer teardown()
+      if err != nil {
+          t.Error("setup:", err)
+      }
+      // do something with f
+  }
+
+- Clean-up code is encapsulated
+- Caller doesn't need to worry about cleaning up
+- If setup changes, code that uses it doesn't necessarily need to
+
+* Organizing your code
+
+* Important code goes first
+
+License information, build tags, package documentation.
+
+Import statements, related groups separated by blank lines.
+
+  import (
+      "fmt"
+      "io"
+      "log"
+  
+      "golang.org/x/net/websocket"
+  )
+
+The rest of the code starting with the most significant types, and ending 
+with helper function and types.
+
+* Document your code
+
+Package name, with the associated documentation before.
+
+  // Package playground registers an HTTP handler at "/compile" that
+  // proxies requests to the golang.org playground service.
+  package playground
+
+Exported identifiers appear in godoc, they should be documented correctly.
+
+  // Author represents the person who wrote and/or is presenting the document.
+  type Author struct {
+      Elem []Elem
+  }
+  
+  // TextElem returns the first text elements of the author details.
+  // This is used to display the author' name, job title, and company
+  // without the contact details.
+  func (p *Author) TextElem() (elems []Elem) {
+
+.link http://godoc.org/code.google.com/p/go.talks/pkg/present#Author Generated documentation
+
+* Shorter is better
+
+or at least _longer_is_not_always_better_.
+
+Try to find the *shortest*name*that*is*self*explanatory*.
+
+- time.ParseTimeString -> time.Parse
+- MarshalWithIndentation -> MarshalIndent
+- TearDown -> Close
+.caption [[https://github.com/matryer/present/blob/master/beautiful-packages/beautiful-packages-in-go-london.md#use-go-like-names][Writing Beautiful Packages in Go by Mat Ryer]]
+
+Don't forget that the package name will appear before the identifier you chose.
+
+- In package *encoding/json* we find the type *Encoder*, not *JSONEncoder*.
+- It is referred as *json.Encoder*.
+
+* Packages with multiple files
+
+Should you split a package into multiple files?
+
+- Avoid very long files
+
+The net/http package from the standard library contains 15734 lines in 47 files.
+
+- Separate code and tests
+
+net/http/cookie.go and net/http/cookie_test.go are both part of the http 
+package.
+
+Test code is compiled *only* at test time.
+
+- Separated package documentation
+
+When we have more than one file in a package, it's convention to create a doc.go 
+containing the package documentation.
+
+* Structure your code properly
+
+People will look at your source if they're thinking of using your package
+
+- Give them a warm welcome, and make them feel at home
+- Glance at directory listing, and go from there
+
+"The first place I look when considering using a package are the test files. If there aren't any, that tells me something. Otherwise, I can quickly see how to use it without any documentation."
+.caption David Hernandez
+
+* Make your packages "go get"-able 
+
+Some packages are potentially reusable, some others are not.
+
+A package defining some network protocol might be reused while one defining 
+an executable command may not.
+
+- *cmd* - for commands
+- *pkg* - for package code
+- *testdata* - for, you guessed it, test data
+- *internal* - for internal stuff that only your code will import
+- *docs* - additional documentation
+- Be sensible
+
+* Listen to @rakyll
+
+- Use multiple *.go* files
+- Keep types close to where they're used
+- Organise by responsibility (*User* type goes into *users.go*)
+- Optimise for godoc and provide examples
+.caption https://rakyll.org/style-packages/
+
+* APIs
+
+* Narrow types are simpler
+
+  func WriteJSON(v interface{}, f *os.File) error
+
+can only write to file
+
+  func WriteJSON(v interface{}, w io.Writer) error
+
+now it can write to ...
+
+* io.Writer
+
+- os.File
+- bytes.Buffer
+- http.ResponseWriter
+- encoding/zip
+- ...
+
+* Leave concurrency to the user
+
+  Avoid this:
+  
+  package thing
+  
+  func DoAmazingThing() {
+  	go startDoingSomethingAmazing()
+  }
+
+User won't necessarily know it's going to do this.
+
+* Leave concurrency to the user
+
+If they want to, the user can do this:
+
+  go thing.DoAmazingThing()
+  // do other stuff at the same time...
+
+and they know what's going on
+
+And they can use it in a blocking way too:
+
+  thing.DoAmazingThing()
+  // after amazing thing
+
+* Don't log stuff out
+
+ ...or at least let users turn it off
+
+* Avoid constructors if you can
+
+  b := tea.NewBrewer(2 * time.Minute)
+
+vs
+
+  b := tea.Brewer{
+  	SteepTime: 2 * time.Minute,
+  }
+
+Which one is clearer?
+
+* Don't automatically add interfaces
+
+I love interfaces - but I love smaller APIs even more
+
+  type Greeter interface {
+  	Greet(name string) string
+  }
+  
+  type FormatGreeter struct {
+  	Format string
+  }
+  
+  func (g FormatGreeter) Greet(name string) string {
+  	return fmt.Sprintf(g.Format, name)
+  }
+
+No need for both Greeter and FormatGreeter
+
+* Ask the user for http.Client
+
+If your package makes HTTP requests, ask the user to provide a *http.Client*
+
+- Let user specify timeouts, redirect policy, proxies, etc.
+- You can still default to *http.DefaultClient*
+- Google App Engine has *urlfetch.NewClient* - so your package wouldn't work there
+
+* Don't mess with the global state
+
+- Don't add flags
+- Avoid init
+- Don't mess with things in the standard library (e.g. changing http.DefaultClient to set a timeout)
+- Importing your package shouldn't have side-effects
+
+* Subpackages are just packages
+
+  import "github.com/matryer/vice/test"
+  
+  func TestTransport(t *testing.T) {
+  	test.Transport(t, newTestTransport)
+  }
+
+changed to
+
+  import "github.com/matryer/vice/vicetest"
+  
+  func TestTransport(t *testing.T) {
+  	vicetest.Transport(t, newTestTransport)
+  }
+
+* Clean Architecture
+
+- Independent of Frameworks.
+- Testable.
+- Independent of UI.
+- Independent of Database.
+- Independent of any external agency.
+.caption [[https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html][The Clean Architecture by Uncle Bob 13 Aug 2012]]
+
+* Twelve best practices
+
+1. Avoid nesting by handling errors first 
+2. Avoid repetition when possible 
+3. Important code goes first 
+4. Document your code 
+5. Shorter is better 
+6. Packages with multiple files 
+7. Make your packages "go get"-able 
+8. Ask for what you need 
+9. Keep independent packages independent 
+10. Avoid concurrency in your API 
+11. Use goroutines to manage state 
+12. Avoid goroutine leaks
+
+* How to become a native speaker
+
+- Read the standard library
+- Write obvious code (not clever)
+- Don't surprise your users
+- Seek simplicity
+
+Learn from others:
+
+- Participate in open-source projects
+- Ask for reviews and accept criticisms
+- Help others when you spot something (and be kind)
+
+* Links
+
+- [[https://medium.com/@matryer/line-of-sight-in-code-186dd7cdea88][Line of sight in code]] by Mat Ryer
+- [[http://go-talks.appspot.com/github.com/matryer/present/idiomatic-go-tricks/main.slide][Idiomatic Go Tricks]] by Mat Ryer
+- [[https://github.com/matryer/present/tree/master/beautiful-packages][Beautiful Packages in Go]] by Mat Ryer
+- [[https://talks.golang.org/2013/bestpractices.slide][Twelve best practices]] by Francesc Campoy Flores
+- [[https://peter.bourgon.org/go-best-practices-2016/][Go best practices, six years in]] by Peter Bourgon
+- [[https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1][Standard Package Layout]] by Ben Johnson
+- [[https://hackernoon.com/golang-clean-archithecture-efd6d7c43047][Trying Clean Architecture on Golang]] by Iman Tumorang
+- [[https://github.com/codeship/go-best-practices][Codeship Golang Best Practices]]
+- [[https://medium.com/@sebdah/go-best-practices-testing-3448165a0e18][Go Best Practices — Testing]] by Sebastian Dahlgren
+- [[https://medium.com/@sebdah/go-best-practices-error-handling-2d15e1f0c5ee][Go Best Practices — Error handling]] by Sebastian Dahlgren
