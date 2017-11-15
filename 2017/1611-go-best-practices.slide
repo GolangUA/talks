@@ -4,10 +4,10 @@ Tags: Go, Best Practices, Go Way, Idiomatic Go
 
 Ivan Kutuzov
 TL, SoftServe
+ikut@softserveinc.com
 https://golang.org.ua
 @arbrix
 @ivan.kutuzov
-ikut@softserveinc.com
 
 * Some reasons why Golang so widely used
 
@@ -39,11 +39,19 @@ But when we work in a team, especially in a complex structure with many independ
 
 Several years ago I was unable to provide a satisfying answer to this question. Now I can, let's check that.
 
+* Toggle: how to save princes at Go
+
+.image ./0804-go-intro/sp-go.png 400 _
+.caption [[https://www.toggl.com/programming-princess][HOW TO SAVE THE PRINCESS IN 8 PROGRAMMING LANGUAGES]]
+
 * By materials
 
 .link https://talks.golang.org/2013/bestpractices.slide Best Practices by Francesc Campoy Flores
 .link http://go-talks.appspot.com/github.com/matryer/present/idiomatic-go-tricks/main.slide Idiomatic Go Tricks by Mat Ryer
+.link https://medium.com/@matryer/line-of-sight-in-code-186dd7cdea88 Line of sight in code by Mat Ryer
+.link https://github.com/matryer/present/tree/master/beautiful-packages Beautiful Packages by Mat Ryer
 .link https://go-proverbs.github.io/ Go Proverbs
+.link https://peter.bourgon.org/go-best-practices-2016 Go Best Practices by Peter Bourgon
 
 * Code practices
 
@@ -135,6 +143,8 @@ See also "cyclomatic complexity" - the pursuit of simplicity
 Less nesting means less cognitive load on the reader
 
 .caption The same advice from Francesc Campoy Flores
+
+.image ./0804-go-intro/nerdy-gopher.png 400 _
 
 * Single method interfaces
 
@@ -232,6 +242,21 @@ Add a new type which is a slice of the interface
 - Size int64 type means we can specify explicit sizes: Size(123)
 - Easy because the interface is so small
 
+* Functional way of create data type
+
+`[]map[string][]string`
+
+`map[string]map[string]map[string]uint8`
+
+.image ./0804-go-intro/dou-gopher.png 400 _
+
+* Can we reduce such complexity by a switch to an interface?
+
+`map[string]interface{}`
+
+.image ./0804-go-intro/gopher_share.png 400 _
+
+
 * Avoid using interface values
 
 Type Assertion is error-prone and harder to read
@@ -239,6 +264,8 @@ Type Assertion is error-prone and harder to read
 Leads to many switch-type blocks and additional error handling
 
 Marshalling works slower
+
+.link https://www.youtube.com/watch?v=PAAkCSZUG1c&t=7m36s interface{} says nothing.
 
 
 * Simple mocks
@@ -348,60 +375,15 @@ Make your own
 
 * Organizing your code
 
-* Important code goes first
+* Structure your code properly
 
-License information, build tags, package documentation.
+People will look at your source if they're thinking of using your package
 
-Import statements, related groups separated by blank lines.
+- Give them a warm welcome, and make them feel at home
+- Glance at directory listing, and go from there
 
-  import (
-      "fmt"
-      "io"
-      "log"
-  
-      "golang.org/x/net/websocket"
-  )
-
-The rest of the code starting with the most significant types, and ending 
-with helper function and types.
-
-* Document your code
-
-Package name, with the associated documentation before.
-
-  // Package playground registers an HTTP handler at "/compile" that
-  // proxies requests to the golang.org playground service.
-  package playground
-
-Exported identifiers appear in godoc, they should be documented correctly.
-
-  // Author represents the person who wrote and/or is presenting the document.
-  type Author struct {
-      Elem []Elem
-  }
-  
-  // TextElem returns the first text elements of the author details.
-  // This is used to display the author' name, job title, and company
-  // without the contact details.
-  func (p *Author) TextElem() (elems []Elem) {
-
-.link http://godoc.org/code.google.com/p/go.talks/pkg/present#Author Generated documentation
-
-* Shorter is better
-
-or at least _longer_is_not_always_better_.
-
-Try to find the *shortest*name*that*is*self*explanatory*.
-
-- time.ParseTimeString -> time.Parse
-- MarshalWithIndentation -> MarshalIndent
-- TearDown -> Close
-.caption [[https://github.com/matryer/present/blob/master/beautiful-packages/beautiful-packages-in-go-london.md#use-go-like-names][Writing Beautiful Packages in Go by Mat Ryer]]
-
-Don't forget that the package name will appear before the identifier you chose.
-
-- In package *encoding/json* we find the type *Encoder*, not *JSONEncoder*.
-- It is referred as *json.Encoder*.
+"The first place I look when considering using a package are the test files. If there aren't any, that tells me something. Otherwise, I can quickly see how to use it without any documentation."
+.caption David Hernandez
 
 * Packages with multiple files
 
@@ -423,16 +405,6 @@ Test code is compiled *only* at test time.
 When we have more than one file in a package, it's convention to create a doc.go 
 containing the package documentation.
 
-* Structure your code properly
-
-People will look at your source if they're thinking of using your package
-
-- Give them a warm welcome, and make them feel at home
-- Glance at directory listing, and go from there
-
-"The first place I look when considering using a package are the test files. If there aren't any, that tells me something. Otherwise, I can quickly see how to use it without any documentation."
-.caption David Hernandez
-
 * Make your packages "go get"-able 
 
 Some packages are potentially reusable, some others are not.
@@ -453,7 +425,7 @@ an executable command may not.
 - Keep types close to where they're used
 - Organise by responsibility (*User* type goes into *users.go*)
 - Optimise for godoc and provide examples
-.caption https://rakyll.org/style-packages/
+.link https://rakyll.org/style-packages/ Style Packages
 
 * APIs
 
@@ -474,6 +446,22 @@ now it can write to ...
 - http.ResponseWriter
 - encoding/zip
 - ...
+
+* Shorter is better
+
+or at least _longer_is_not_always_better_.
+
+Try to find the *shortest*name*that*is*self*explanatory*.
+
+- time.ParseTimeString -> time.Parse
+- MarshalWithIndentation -> MarshalIndent
+- TearDown -> Close
+.caption [[https://github.com/matryer/present/blob/master/beautiful-packages/beautiful-packages-in-go-london.md#use-go-like-names][Writing Beautiful Packages in Go by Mat Ryer]]
+
+Don't forget that the package name will appear before the identifier you chose.
+
+- In package *encoding/json* we find the type *Encoder*, not *JSONEncoder*.
+- It is referred as *json.Encoder*.
 
 * Leave concurrency to the user
 
@@ -504,6 +492,8 @@ And they can use it in a blocking way too:
 * Don't log stuff out
 
  ...or at least let users turn it off
+
+.image ./0804-go-intro/engineers.png 500 _
 
 * Avoid constructors if you can
 
@@ -573,7 +563,7 @@ changed to
 - Independent of UI.
 - Independent of Database.
 - Independent of any external agency.
-.caption [[https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html][The Clean Architecture by Uncle Bob 13 Aug 2012]]
+.link https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html The Clean Architecture by Uncle Bob 13 Aug 2012
 
 * Twelve best practices
 
@@ -590,6 +580,8 @@ changed to
 11. Use goroutines to manage state 
 12. Avoid goroutine leaks
 
+.link https://talks.golang.org/2013/bestpractices.slide#1 Go Best Practices by Francesc Campoy Flores 2013
+
 * How to become a native speaker
 
 - Read the standard library
@@ -603,6 +595,8 @@ Learn from others:
 - Ask for reviews and accept criticisms
 - Help others when you spot something (and be kind)
 
+.link http://go-talks.appspot.com/github.com/matryer/present/idiomatic-go-tricks Idiomatic Go Tricks by Mat Ryer 2016
+
 * Links
 
 - [[https://medium.com/@matryer/line-of-sight-in-code-186dd7cdea88][Line of sight in code]] by Mat Ryer
@@ -615,3 +609,7 @@ Learn from others:
 - [[https://github.com/codeship/go-best-practices][Codeship Golang Best Practices]]
 - [[https://medium.com/@sebdah/go-best-practices-testing-3448165a0e18][Go Best Practices — Testing]] by Sebastian Dahlgren
 - [[https://medium.com/@sebdah/go-best-practices-error-handling-2d15e1f0c5ee][Go Best Practices — Error handling]] by Sebastian Dahlgren
+
+* Community
+
+.image ./0804-go-intro/community.png 500 500
