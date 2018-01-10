@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var GlobalResource <-chan int
+var GlobalResource chan int
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -66,14 +66,15 @@ func SubWorker(ctx context.Context, wg *sync.WaitGroup, index int) {
 	}
 }
 
-func NewResource(ctx context.Context, wg *sync.WaitGroup) <-chan int {
-	out := make(chan int)
+func NewResource(ctx context.Context, wg *sync.WaitGroup) chan int {
+	out := make(chan int, 1)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		for {
 			select {
 			case <-ctx.Done():
+				close(GlobalResource)
 				fmt.Println("Resource received ctx.Done signal")
 				return
 			case out <- rand.Intn(200):
