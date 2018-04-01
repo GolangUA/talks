@@ -1,4 +1,4 @@
-# Common mistaks at production with Golang
+# Common mistakes at production
 
 ### It is not the problem to write nice code until it goes into production
 
