@@ -2,6 +2,15 @@
 
 ---
 
+## About Me
+
+- SoftServe - Golang evangelist
+- Twitter: @arbrix
+- Github: arbrix
+- GolangUA!: https://golang.org.ua
+
+---
+
 ### It is not the problem to write nice code until it goes into production
 
 ---
