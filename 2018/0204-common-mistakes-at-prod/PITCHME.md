@@ -59,7 +59,7 @@
 
 ## Logging
 
-- Log only _actionable_ _information_, which will be read by a human or a machine (Peter Bourgon) |
+- Log only actionable information, which will be read by a human or a machine (Peter Bourgon) |
 - add necessary context to your logs, write all in one operation |
 - use structured logs |
 
@@ -67,8 +67,8 @@
 
 ## Metrics
 
-- **USE**: utilization, saturation, and error count (rate) |
-- **RED**: request count (rate), error count (rate), and duration |
+- USE: utilization, saturation, and error count (rate) |
+- RED: request count (rate), error count (rate), and duration |
 - application metrics: memory, goroutines, GC pauses |
 
 ---
@@ -84,8 +84,8 @@
 
 ## Package Organization - Applications
 
-- **Domain** **Types** are types that model your business functionality and objects |
-- **Services** are packages that operate on or with the domain types |
+- Domain Types are types that model your business functionality and objects |
+- Services are packages that operate on or with the domain types |
 
 ---
 
