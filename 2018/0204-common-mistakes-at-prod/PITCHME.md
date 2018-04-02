@@ -19,6 +19,7 @@
 
 - Public use |
 - Strict access or no any ... |
+- An application may be run in a multi-instance mode |
 - It is hard to reproduce client bugs |
 - You even can't imagine in what way your service may be used 😈 |
 - Your variants ... |
@@ -75,6 +76,7 @@
 
 ## Mistakes with code base
 
+- copy-pasted code from examples without full understanding |
 - used PoC code as a final solution |
 - used clever and complex tricks |
 - low decomposition level |
@@ -84,16 +86,41 @@
 
 ## Package Organization - Applications
 
+- has a huge impact on the testability and functionality of your system |
+- is easy to understand, easy to refactor, and easy for someone else to maintain |
+
+---
+### Package Organization - Application
+
 - Domain Types are types that model your business functionality and objects |
 - Services are packages that operate on or with the domain types |
 
 ---
 
+### Package Organization - Application
+
+- domain interfaces should be in separate packages, organized by dependency |
+  - External data sources |
+  - Transport logic (http, RPC) |
+
+---
+
+### Package Organization - Applications
+
+Why one package per dependency?
+
+- Simple testing |
+- Easy substitution/replacement |
+- No circular dependencies |
+
+---
+
 ## Links
 
-- [Code Like the Go Team](https://talks.bjk.fyi/bketelsen/gcru18-best#/)
+- [Code Like the Go Team by Ashley McNamara at GopherCon Russia 2018](https://talks.bjk.fyi/bketelsen/gcru18-best#/)
 - [The Art of Testing by Mat Ryer at dotGo 2017](https://www.dotconferences.com/2017/11/mat-ryer-the-art-of-testing)
 - [Successful Go Program Design, 6 Years On by Peter Bourgon at QCon Jul 13, 2016](https://www.infoq.com/presentations/go-patterns)
+- [Site Reliability Engineering by Googlers](https://landing.google.com/sre/book.html)
 
 ---
 
