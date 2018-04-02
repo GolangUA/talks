@@ -1,12 +1,14 @@
 # Common mistakes at production
 
+---
+
 ### It is not the problem to write nice code until it goes into production
 
 ---
 
 ## Production defenition
 
-- Public use
+- Public use |
 - Strict access or no any |
 - It is hard to reproduce client bugs |
 - You even can't imagine in what way your service may be used 😈 |
