@@ -1,0 +1,234 @@
+What can cause a pain at your Go projects
+3 Sep 2018
+Tags: Go, practicies, mistakes
+
+Borys Hulii
+
+* Why this topic?
+
+Had chance to work on different projects:
+- Data mining
+- Realtime stream data processing
+- Transport logistics
+- Community management tool (social network)
+
+To help you to make "healthcheck" in your codebase
+
+* Mono package and micro packages
+
+- Encapsulation
+- Mess in project
+- Hard to test
+- IDE dies
+
+.image ./0903-pain-at-go-project/sweaty-gopher-boxes.jpeg 300 _
+
+* Skipping error checks (and checking extra)
+
+.image ./0903-pain-at-go-project/tweet-errors.png _ 1000
+
+* The most skipped error checks I've seen
+
+  f, err := os.Open("file.ext")
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  _, err = io.Copy(os.Stdout, f)
+  if err != nil {
+    log.Fatal(err)
+  }
+  defer f.Close()
+
+and
+
+  rsp, err := http.Get("http://some.domain/path/to/content")
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  _, err = io.Copy(os.Stdout, rsp.Body)
+  if err != nil {
+    log.Fatal(err)
+  }
+  defer rsp.Body.Close()
+
+* Checking extra
+
+  func doSomeStuff(m map[int]string, key int) error {
+    data, ok := m[key]
+    if !ok || data == "" {
+      return errors.New("nope...")
+    }
+  }
+
+and
+
+  func (t *T) doSomeOtherStuff(a int, b string, c ...float64) error {
+    if t == nil {
+      return fmt.Errorf("foo bar baz in doSomeOtherStuff(%d, %s, %v)", a, b, c)
+    }
+    ...
+  }
+
+* Factory of the factory to produce new factories
+
+- Previous experience
+- Memory leaks
+- Performance
+- Readability
+- Debugging…
+
+.image ./0903-pain-at-go-project/factories.png _ 400
+
+* Simpliest example
+
+  type NotAGodObject struct {
+    config1 string
+    config2 string
+    //...
+    db dbCfg
+  }
+
+  func (n NotAGodObject) DB() (*sql.DB, error) {
+    //...
+  }
+
+  func (n NotAGodObject) Queue() (*another.Connect, error) {
+    //...
+  }
+
+
+* Interface{} is not a generic
+
+- Code is not strongly typed
+- Performance
+- Readability
+
+  func F(r map[string]interface{}) interface{} {
+    var result Type
+    ...
+    return result
+  }
+
+* Overoptimization
+
+- Code is very tight
+- Maintainability
+- Manic-optimizator in team
+
+.image ./0903-pain-at-go-project/shooting.jpg _ 400
+
+* Goroutine leaks and data races
+
+- Potential data lost
+- Performance
+- Profiling/Tracing hardly possible
+- Unpledictable behaiviour
+
+.image ./0903-pain-at-go-project/tired.png _ 400
+
+* Typical goroutine leaks
+
+  for _, key := range keysSlice {
+    go func(key string) {
+      data := getSomeData(key)
+      go processData(data)
+    } (key)
+  }
+
+and
+
+  go func() {
+    var c chan int
+    <-c
+  }
+
+and
+
+  select {
+  case <-time.After(time.Hour):
+    ...
+  case <-time.After(time.Second):
+    ...
+  }
+
+* Data race example
+
+  package main
+
+  var cache = make(map[string]string)
+  ...
+  var dbConn *sql.DB
+
+  func main() {
+    ...
+  }
+
+and
+
+  cache := make(map[string]string)
+  go func() {
+    ...
+    cache[key] = value
+    ...
+  }()
+  go func() {
+    ...
+    cache[key] = value
+    ...
+  }()
+
+* ORM/Web frameworks for Go
+
+- Not possible to determine when is “too much”
+- Usually good for simple applications and standard cases
+- Performance
+
+* Simple vs Smart vs Easy
+
+.image ./0903-pain-at-go-project/simple-smart-easy.jpeg _ 1000
+
+* Simple
+
+  func simple(key string, data map[int]int) error {
+    if key == "a" {
+      return A(data)
+    } else if key == "b" {
+      return B(data)
+    //...
+    } else if key == "z" {
+      return Z(data)
+    }
+    return errors.New("unknown")
+  }
+
+* Smart
+
+  func smart(key string, data map[int]int) error {
+    funcs := map[string]func(map[int]int) error {
+      "a": A,
+      "b": B,
+      ...
+      "z": Z,
+    }
+    f, ok := funcs[key]
+    if !ok {
+      return errors.New("unknown")
+    }
+
+    return f(data)
+  }
+
+* Easy
+
+  func easy(key string, data map[int]int) error {
+    return superPuperLib.DoEverything(key, data)
+  }
+
+* Conclusion
+
+- There are no ideal projects
+- Think not how to implement, but how to live with this implementation
+- Each game has its own rules
+- It is never late to fix at least one of those issues
