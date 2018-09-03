@@ -16,6 +16,8 @@ To help you to make "healthcheck" in your codebase
 
 * Mono package and micro packages
 
+* 
+
 - Encapsulation
 - Mess in project
 - Hard to test
@@ -23,7 +25,10 @@ To help you to make "healthcheck" in your codebase
 
 .image ./0903-pain-at-go-project/sweaty-gopher-boxes.jpeg 300 _
 
+
 * Skipping error checks (and checking extra)
+
+* 
 
 .image ./0903-pain-at-go-project/tweet-errors.png _ 1000
 
@@ -33,12 +38,12 @@ To help you to make "healthcheck" in your codebase
   if err != nil {
     log.Fatal(err)
   }
+  defer f.Close()
 
   _, err = io.Copy(os.Stdout, f)
   if err != nil {
     log.Fatal(err)
   }
-  defer f.Close()
 
 and
 
@@ -46,12 +51,12 @@ and
   if err != nil {
     log.Fatal(err)
   }
+  defer rsp.Body.Close()
 
   _, err = io.Copy(os.Stdout, rsp.Body)
   if err != nil {
     log.Fatal(err)
   }
-  defer rsp.Body.Close()
 
 * Checking extra
 
@@ -72,6 +77,8 @@ and
   }
 
 * Factory of the factory to produce new factories
+
+* 
 
 - Previous experience
 - Memory leaks
@@ -101,6 +108,8 @@ and
 
 * Interface{} is not a generic
 
+* 
+
 - Code is not strongly typed
 - Performance
 - Readability
@@ -113,6 +122,8 @@ and
 
 * Overoptimization
 
+* 
+
 - Code is very tight
 - Maintainability
 - Manic-optimizator in team
@@ -121,12 +132,14 @@ and
 
 * Goroutine leaks and data races
 
+* 
+
 - Potential data lost
 - Performance
 - Profiling/Tracing hardly possible
 - Unpledictable behaiviour
 
-.image ./0903-pain-at-go-project/tired.png _ 400
+.image ./0903-pain-at-go-project/tired.png 300 _
 
 * Typical goroutine leaks
 
@@ -181,13 +194,15 @@ and
 
 * ORM/Web frameworks for Go
 
+* 
+
 - Not possible to determine when is “too much”
 - Usually good for simple applications and standard cases
 - Performance
 
 * Simple vs Smart vs Easy
 
-.image ./0903-pain-at-go-project/simple-smart-easy.jpeg _ 1000
+.image ./0903-pain-at-go-project/simple-smart-easy.jpeg _ 800
 
 * Simple
 
