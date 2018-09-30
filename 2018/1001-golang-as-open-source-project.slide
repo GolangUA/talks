@@ -1,0 +1,177 @@
+The Go open source project - what is that mean.
+01 Oct 2018
+Go, Community
+
+Ivan Kutuzov
+Senior Engineer, SoftServe
+https://golang.org.ua
+ikut@softserveinc.com
+@arbrix
+
+* Agenda
+
+- The ideology of open-source under the hood.
+- Contributors impact.
+- What is the community?
+
+*  The ideology of open-source under the hood.
+
+* Go: Why it goes by Serhii Pichkurov
+
+Imports are based on the public URL for each package. Even with *modules*, it requires to write down that path at a _go.mod_ file.
+
+.link https://youtu.be/Es0uBFSrJig Go: Why it goes by Serhii Pichkurov
+
+* History of language creation
+
+The initial discussion was on the afternoon of Thursday, the 20th of September, 2007. That led to an organized meeting between Robert Griesemer, Rob Pike, and Ken Thompson at 2PM the next day in the conference room called Yaounde in Building 43 on Google's Mountain View campus. The name for the language arose on the 25th...
+
+The Go project counts its birthday as November 10, 2009, the day it launched as open source, originally on code.google.com before migrating to GitHub a few years later.
+
+The shocking yet delightful arrival of an ally (Ian) and a second compiler (gccgo) was not only encouraging, it was enabling. (June 7, 2008)
+
+Russ Cox joined the nascent Go team in 2008 as well, bringing his own bag of tricks.
+
+.caption [[https://commandcenter.blogspot.com/2017/09/go-ten-years-and-climbing.html][Go: Ten years and climbing. by Rob Pik]]
+
+* Yearly overview by Go Team
+
+8 years since Go was released as an open source project.
+
+Go has been embraced by developers all over the world with approximately one million users worldwide.
+
+Go has become the #9 most popular language, surpassing C. Go is the fastest growing language on GitHub in 2017 in the top 10 with 52% growth over the previous year.
+
+Go was the only language that was both on the top 5 most loved and top 5 most wanted languages.
+
+Since Go was first open sourced we have had 10 releases of the language, libraries and tooling with more than 1680 contributors making over 50,000 commits to the project's 34 repositories; More than double the number of contributors and nearly double the number of commits from only two years ago.
+
+.caption [[https://blog.golang.org/8years][Eight years of Go by Steve Francia, 10 November 2017]]
+
+* Contributors
+
+.image 1001-golang-as-open-source-project/contributors-impact.png _ 500
+
+* Top Contributors
+
+.image 1001-golang-as-open-source-project/top-contributors.png _ 400
+
+* Review feedback
+
+.image 1001-golang-as-open-source-project/bradfitz-review.png _ 800
+
+* Community manager
+
+.image 1001-golang-as-open-source-project/cassandra-loves-go.png _ 600
+
+.link https://twitter.com/Cassandraoid/status/971576156112605185
+
+* Steve Francia
+
+His entire objective is to make the Go user and developer experience phenomenal.
+
+- Refining the Go developer experience for beginners and experts alike
+- Refining the Go contributor experience (std lib, tools, compiler, etc)
+- Increasing the collaboration & communication between the Go team and the community
+- Gathering data & feedback from enterprises, users, developers, integrators and provide insights to the Go team
+- Supporting the community by working with them to define processes, make connections and organize
+- Establishing partnerships with different vendors, products, organizations and enterprises to propel Go’s adoption, ecosystem and usage
+
+.link http://spf13.com/post/joining-go-team-at-google/
+
+* How To Be A Good Open Source Community Member by Steve Francia
+
+Rules:
+
+1. Assume good will
+2. Attitude of appreciation
+3. Don’t be afraid to jump in… ask questions, contribute.
+
+.link http://spf13.com/post/how-to-be-a-good-open-source-community-member/
+
+* Wiki
+
+* Blogs
+
+- [[https://blog.golang.org/][The official Go Blog]] - For in depth posts by the Go team
+- [[http://blog.gopheracademy.com/][Gopher Academy Blog]]
+- [[http://dave.cheney.net/][Dave Cheney's Blog]]
+- [[http://spf13.com/post/][spf13's Go Blog]]
+- [[https://medium.com/@matryer][Mat Ryer's Medium Blog]]
+- [[http://marcio.io/][Marcio.io]]
+- [[https://www.ardanlabs.com/blog/][Ardan Studios Going Go]]
+- [[http://golangweekly.com/][The Golang Weekly]]
+- [[http://golangtutorials.blogspot.com/][GoLang Tutorials]]
+- [[https://pliutau.com/][Aliaksandr Pliutau's Golang Blog]]
+- [[https://appliedgo.net/][Christoph Berger's Applied Go Blog]]
+
+.link https://github.com/golang/go/wiki/Blogs
+
+* Books
+
+- Go Programming
+- The Way to Go: A Thorough Introduction to the Go Programming Language
+- The Go Programming Language Phrasebook
+- Programming in Go: Creating Applications for the 21st Century
+- An Introduction to Programming in Go
+- Go Bootcamp: Everything you need to get started with Go (FREE)
+- Mastering Concurrency in Go
+- The Little Go Book
+- Go Programming Blueprints
+- Level Up Your Web Apps With Go
+- ...
+
+.link https://github.com/golang/go/wiki/Books
+
+* Learn
+
+.link https://github.com/golang/go/wiki/Learn
+.link https://github.com/golang/go/wiki/Articles
+.link https://github.com/enocom/gopher-reading-list
+
+* Community
+
+* Community
+
+A feeling of fellowship with others, as a result of sharing common attitudes, interests and goals.
+
+Community = a group of people that care about each other and feel they belong together.
+
+- A group of people
+- that care about each other
+- feel they belong
+- together
+
+* Our local goals:
+
+- Helps beginners.
+- Helps in professional grows.
+- Contribute to existing solutions and tools.
+- Generate new solutions or tools.
+
+* Community instruments
+
+- [[https://github.com/golang/go/wiki][Wiki is the best source of links]]
+
+-- [[https://github.com/golang/go/wiki/Books][Books]]
+-- [[https://github.com/golang/go/wiki/Blogs][Blogs]]
+-- [[https://github.com/golang/go/wiki/Learn][Learn]]
+
+- [[https://medium.com/search?q=golang][Medium]] - as platform for knowladge shering, exept personal blogs
+- [[https://www.reddit.com/r/golang/][Reddit]] - for asking your questions, none of the questions is stupid
+- [[https://twitter.com/hashtag/golang][Twitter]] - for keep on track of community activity
+- [[https://invite.slack.golangbridge.org/][Slack]] - for personal and group communication, regarding some topic (P.S. everyone mute #general).
+
+_There_are_a_lot_more,_but_this_is_basic._
+
+* What should be next?
+
+Your contribution:
+
+- Help in onrganization next event: meetup, workshop, etc.
+- Become a speaker at the next meetup.
+- Become a mentor at the next workshop.
+- Write an article about your experince with Golang.
+- Contribute to community (#GolangUA) media: site, FB group, Telegram channel, etc.
+- Contribute to Go or other package, tool from ecosystem.
+- Ask questions. Remember there is no stupid question.
