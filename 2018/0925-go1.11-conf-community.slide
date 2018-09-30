@@ -1,0 +1,188 @@
+Go 1.11, Go 2.0, GopherCon, community overview
+25 Sep 2018
+Go1.11, Go2.0
+
+Ivan Kutuzov
+Senior Engineer, SoftServe
+https://golang.org.ua
+@arbrix
+
+* Agenda
+
+- Go 1.11
+- Conferences
+- Go 2 draft designs
+- Community
+
+* Go 1.11
+
+* Go 1.11
+
+This theme is covered by Daniel Martí at his slides: [[https://talks.godoc.org/github.com/mvdan/talks/2018/go1.11.slide][What else is in Go 1.11?]]
+
+* Go modules
+
+
+* Go modules
+
+This theme is covered by Paul Jolly at his slides: [[https://talks.godoc.org/github.com/myitcv/talks/2018-08-15-glug-modules/main.slide][What are Go modules and how do I use them?]]
+
+* Conferences
+
+* List
+
+- GopherCon
+- GoWayFest (Minsk)
+- GDG DevFest (Lviv)
+- GoLab (Florence)
+- GoGoConf (Krakow)
+- GoDays (Berlin)
+- dotGo (Paris) [promo: GOLANGUA]
+- GothamGo (New York)
+
+.link https://github.com/golang/go/wiki/Conferences
+
+* GopherCon 2018
+
+- [[https://www.youtube.com/playlist?list=PL2ntRZ1ySWBdatAqf-2_125H4sGzaWngM][Talks Playlist]]
+- [[https://www.youtube.com/playlist?list=PL2ntRZ1ySWBdMEZScpaoRX-vyt6pRUvfM][Lightning Talks Playlist]]
+
+Highly recommend to watch:
+.link https://about.sourcegraph.com/go/gophercon-2018-go-says-wat/
+.link https://about.sourcegraph.com/go/gophercon-2018-how-do-you-structure-your-go-apps/
+.link https://about.sourcegraph.com/go/gophercon-2018-5-mistakes-c-c-devs-make-writing-go/
+.link https://about.sourcegraph.com/go/gophercon-2018-binary-search-tree-algorithms/
+
+P.S. There were a lot of awesome and inspiring talks but you should find what is best for you.
+
+* Go 2 Draft Desinges
+
+* Go 2 Draft Desinges
+
+.link https://blog.golang.org/go2draft
+
+- Error handling
+- Error values
+- Generics
+
+.link https://go.googlesource.com/proposal/+/master/design/go2draft.md
+
+* Error handling problem
+
+  func CopyFile(src, dst string) throws error {
+  	r := os.Open(src)
+  	defer r.Close()
+
+  	w := os.Create(dst)
+  	io.Copy(w, r)
+  	w.Close()
+  }
+
+.link https://go.googlesource.com/proposal/+/master/design/go2draft-error-handling-overview.md
+
+* Error handling prod-like
+
+  func CopyFile(src, dst string) error {
+  	r, err := os.Open(src)
+  	if err != nil {
+  		return fmt.Errorf("copy %s %s: %v", src, dst, err)
+  	}
+  	defer r.Close()
+
+  	w, err := os.Create(dst)
+  	if err != nil {
+  		return fmt.Errorf("copy %s %s: %v", src, dst, err)
+  	}
+
+  	if _, err := io.Copy(w, r); err != nil {
+  		w.Close()
+  		os.Remove(dst)
+  		return fmt.Errorf("copy %s %s: %v", src, dst, err)
+  	}
+
+  	if err := w.Close(); err != nil {
+  		os.Remove(dst)
+  		return fmt.Errorf("copy %s %s: %v", src, dst, err)
+  	}
+  }
+
+* Error handling draft design
+
+  func CopyFile(src, dst string) error {
+  	handle err {
+  		return fmt.Errorf("copy %s %s: %v", src, dst, err)
+  	}
+
+  	r := check os.Open(src)
+  	defer r.Close()
+
+  	w := check os.Create(dst)
+  	handle err {
+  		w.Close()
+  		os.Remove(dst) // (only if a check fails)
+  	}
+
+  	check io.Copy(w, r)
+  	check w.Close()
+  	return nil
+  }
+
+* Error values solution list
+
+.link github.com/spacemonkeygo/errors
+.link github.com/juju/errgo
+.link gopkg.in/errgo.v1
+.link gopkg.in/errgo.v2
+.link github.com/hashicorp/errwrap
+.link github.com/pkg/errors
+.link upspin.io/error
+
+.link https://go.googlesource.com/proposal/+/master/design/go2draft-error-values-overview.md
+
+* Community
+
+* GopherCon Community day
+
+- Community Day Roundtables
+- Go Team Community and Contribution Workshop
+- GopherCars, GoBots & Other Flying Objects
+- GopherSource: Open Source for Gophers
+- Lightning Talks
+
+* Community
+
+A feeling of fellowship with others, as a result of sharing common attitudes, interests and goals.
+
+Goals:
+
+- Helps beginners.
+- Helps in professional grows.
+- Contribute to existing solutions and tools.
+- Generate new solutions or tools.
+- Your variants.
+
+* Community instruments
+
+- [[https://github.com/golang/go/wiki][Wiki is the best source of links]]
+
+-- [[https://github.com/golang/go/wiki/Books][Books]]
+-- [[https://github.com/golang/go/wiki/Blogs][Blogs]]
+-- [[https://github.com/golang/go/wiki/Learn][Learn]]
+
+- [[https://medium.com/search?q=golang][Medium]] - as platform for knowladge shering, exept personal blogs
+- [[https://www.reddit.com/r/golang/][Reddit]] - for asking your questions, none of the questions is stupid
+- [[https://twitter.com/hashtag/golang][Twitter]] - for keep on track of community activity
+- [[https://invite.slack.golangbridge.org/][Slack]] - for personal and group communication, regarding some topic (P.S. everyone mute #general).
+
+_There_are_a_lot_more,_but_this_is_basic._
+
+* What should be next?
+
+Your contribution:
+
+- Help in onrganization next event: meetup, workshop, etc.
+- Become a speaker at the next meetup.
+- Become a mentor at the next workshop.
+- Contribute to community media: site, FB group, Telegram channel, etc.
+- Contribute to Go or other package, tool from ecosystem.
+- Ask questions. Remember there is no stupid question.
